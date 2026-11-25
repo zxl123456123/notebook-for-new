@@ -1,0 +1,948 @@
+<!doctype html>
+<html lang="zh-CN">
+  <meta charset="utf-8" /><meta
+    name="viewport"
+    content="width=device-width,initial-scale=1"
+  /><title>科研团队门户 · 排版评审稿</title
+  ><style>
+    :root {
+      --ink: #15263b;
+      --blue: #1757ba;
+      --muted: #617183;
+      --line: #dce3eb;
+      --soft: #edf3fb;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      color: var(--ink);
+      font:
+        15px/1.85 "Microsoft YaHei",
+        sans-serif;
+      background: white;
+    }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+    a:hover {
+      color: var(--blue);
+    }
+    a:focus-visible,
+    summary:focus-visible {
+      outline: 3px solid #4989e3;
+      outline-offset: 5px;
+    }
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+    h1,
+    h2,
+    h3 {
+      line-height: 1.35;
+    }
+    h1 {
+      letter-spacing: -2px;
+    }
+    h2 {
+      font-size: 27px;
+    }
+    h3 {
+      font-size: 18px;
+    }
+    .wrap {
+      max-width: 1280px;
+      margin: auto;
+      padding: 0 48px;
+    }
+    .header {
+      height: 88px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 25px;
+    }
+    .brand {
+      display: flex;
+      gap: 13px;
+      align-items: center;
+      font-size: 19px;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+    .mark {
+      width: 30px;
+      height: 30px;
+      border: 8px solid var(--blue);
+      transform: rotate(-12deg);
+      box-shadow: 6px 6px 0 #dbe7f8;
+    }
+    .brand small {
+      display: block;
+      font-size: 9px;
+      font-weight: normal;
+      letter-spacing: 2px;
+      color: var(--muted);
+    }
+    .nav {
+      display: flex;
+      gap: 30px;
+      font-size: 13px;
+    }
+    .nav a {
+      padding: 31px 0;
+    }
+    .nav a.active {
+      color: var(--blue);
+      box-shadow: 0 2px var(--blue);
+    }
+    .tag {
+      font-size: 10px;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      padding: 3px 8px;
+      letter-spacing: 1px;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 50px;
+      align-items: center;
+      padding: 70px 0;
+    }
+    .eyebrow {
+      font-size: 11px;
+      color: var(--blue);
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+    .hero h1 {
+      font-size: 56px;
+      line-height: 1.22;
+      margin: 17px 0 23px;
+    }
+    .hero h1 em {
+      font-style: normal;
+      color: var(--blue);
+    }
+    .lead {
+      color: var(--muted);
+      font-size: 16px;
+    }
+    .actions {
+      display: flex;
+      gap: 27px;
+      align-items: center;
+      margin-top: 32px;
+    }
+    .primary {
+      display: inline-block;
+      padding: 12px 23px;
+      background: var(--blue);
+      color: white;
+      font-size: 13px;
+    }
+    .primary:hover {
+      color: white;
+      background: #11438b;
+    }
+    .text-link {
+      color: var(--blue);
+      font-size: 13px;
+    }
+    .visual {
+      height: 350px;
+      position: relative;
+      background-color: #f4f7fc;
+      background-image:
+        linear-gradient(#dce5f280 1px, transparent 1px),
+        linear-gradient(90deg, #dce5f280 1px, transparent 1px);
+      background-size: 34px 34px;
+      overflow: hidden;
+      border: 1px solid #e4ebf5;
+    }
+    .orbit {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      left: calc(50% - 150px);
+      top: 25px;
+      border: 1px solid #92add3;
+      border-radius: 50%;
+      transform: rotate(-30deg) scaleX(0.65);
+    }
+    .orbit.two {
+      transform: rotate(30deg) scaleX(0.65);
+    }
+    .orbit.three {
+      transform: rotate(90deg) scaleX(0.65);
+    }
+    .core {
+      position: absolute;
+      left: calc(50% - 23px);
+      top: 152px;
+      width: 46px;
+      height: 46px;
+      background: var(--blue);
+      transform: rotate(45deg);
+      box-shadow: 0 0 0 15px #1757ba0a;
+    }
+    .dot {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 0 6px white;
+      left: calc(50% - 100px);
+      top: 75px;
+    }
+    .dot.two {
+      left: calc(50% + 98px);
+      top: 221px;
+    }
+    .visual-caption {
+      position: absolute;
+      bottom: 17px;
+      left: 20px;
+      font: 10px/1.7 monospace;
+      letter-spacing: 1px;
+      color: var(--muted);
+    }
+    .visual-top {
+      position: absolute;
+      right: 18px;
+      top: 17px;
+      font: 10px monospace;
+      color: var(--blue);
+    }
+    .intro {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 30px;
+      border-top: 1px solid var(--line);
+      padding: 27px 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .band {
+      background: #f7f9fc;
+      border-block: 1px solid var(--line);
+    }
+    .section {
+      padding: 54px 0;
+    }
+    .section-head {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      margin-bottom: 27px;
+    }
+    .section-head p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 9px;
+    }
+    .guide-grid {
+      display: grid;
+      grid-template-columns: 1.3fr 1fr 1fr;
+    }
+    .card {
+      padding: 26px 28px;
+      border: 1px solid var(--line);
+      border-right: 0;
+      background: white;
+      min-height: 210px;
+    }
+    .card:last-child {
+      border-right: 1px solid var(--line);
+    }
+    .card.feature {
+      background: var(--blue);
+      color: white;
+      border-color: var(--blue);
+    }
+    .stage {
+      font: 11px monospace;
+      color: var(--muted);
+      margin-bottom: 17px;
+    }
+    .card p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 12px 0 22px;
+    }
+    .card.feature p,
+    .feature .stage {
+      color: #dbe7fa;
+    }
+    .feature .text-link {
+      color: white;
+    }
+    .pending {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1.05fr 1fr;
+      gap: 80px;
+    }
+    .direction {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 16px;
+      padding: 23px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .direction b {
+      font: 12px monospace;
+      color: var(--blue);
+      padding-top: 7px;
+    }
+    .direction p,
+    .update p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+    .update {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      gap: 19px;
+      padding: 23px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .update h3 {
+      font-size: 16px;
+    }
+    .update time {
+      font: 11px/1.8 monospace;
+      color: var(--muted);
+    }
+    .note {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 18px;
+    }
+    .footer {
+      border-top: 1px solid var(--line);
+      padding: 24px 0;
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .reading {
+      max-width: 1400px;
+      margin: auto;
+      padding: 38px 48px 80px;
+      display: grid;
+      grid-template-columns: 215px minmax(0, 700px) 160px;
+      gap: 45px;
+    }
+    .sidebar {
+      border-right: 1px solid var(--line);
+      padding-right: 25px;
+      font-size: 13px;
+    }
+    .sticky {
+      position: sticky;
+      top: 28px;
+    }
+    .side-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 23px;
+    }
+    .sidebar details {
+      margin: 20px 0;
+    }
+    .sidebar summary {
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .sidebar a {
+      display: block;
+      padding: 8px 12px;
+      margin-top: 8px;
+      color: var(--blue);
+      background: var(--soft);
+      border-left: 2px solid var(--blue);
+    }
+    .quiet {
+      display: block;
+      padding: 5px 12px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+    .crumb {
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 27px;
+    }
+    .article h1 {
+      font-size: 39px;
+      margin: 12px 0 20px;
+    }
+    .deck {
+      font-size: 18px;
+      line-height: 1.9;
+      color: var(--muted);
+    }
+    .meta {
+      border-bottom: 1px solid var(--line);
+      padding: 20px 0 25px;
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      gap: 20px;
+    }
+    .callout {
+      padding: 18px 22px;
+      background: var(--soft);
+      border-left: 3px solid var(--blue);
+      margin: 27px 0;
+    }
+    .callout strong {
+      font-size: 14px;
+      color: var(--blue);
+    }
+    .callout p {
+      font-size: 14px;
+      margin: 8px 0 0 !important;
+    }
+    .article section {
+      margin-top: 40px;
+      scroll-margin-top: 28px;
+    }
+    .article h2 {
+      font-size: 25px;
+      margin-bottom: 18px;
+    }
+    .article p {
+      margin-bottom: 17px;
+      line-height: 1.95;
+    }
+    .article li {
+      margin: 12px 0;
+      padding-left: 5px;
+    }
+    .article blockquote {
+      margin: 25px 0;
+      padding-left: 20px;
+      border-left: 2px solid var(--line);
+      color: var(--muted);
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+      margin: 23px 0;
+    }
+    th,
+    td {
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid var(--line);
+      padding: 13px;
+    }
+    th {
+      background: #f7f9fc;
+    }
+    .template {
+      padding: 20px 24px;
+      background: #f7f9fc;
+      border: 1px solid var(--line);
+      font: 13px/2 monospace;
+      white-space: pre-wrap;
+    }
+    .article-end {
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid var(--line);
+    }
+    .toc {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .toc strong {
+      font-size: 12px;
+      color: var(--ink);
+    }
+    .toc nav {
+      margin-top: 15px;
+    }
+    .toc a {
+      display: block;
+      border-left: 1px solid var(--line);
+      padding: 7px 0 7px 14px;
+    }
+    .toc a.active {
+      border-left: 2px solid var(--blue);
+      color: var(--blue);
+    }
+    [hidden] {
+      display: none !important;
+    }
+    .skip {
+      position: absolute;
+      left: 10px;
+      top: -100px;
+      background: white;
+      padding: 10px;
+      z-index: 10;
+    }
+    .skip:focus {
+      top: 10px;
+    }
+    @media (max-width: 1100px) {
+      .wrap {
+        padding: 0 28px;
+      }
+      .hero {
+        gap: 28px;
+      }
+      .hero h1 {
+        font-size: 46px;
+      }
+      .reading {
+        padding-inline: 28px;
+        grid-template-columns: 185px minmax(0, 1fr);
+        gap: 30px;
+      }
+      .toc {
+        display: none;
+      }
+      .split {
+        gap: 40px;
+      }
+    }
+    @media (max-width: 720px) {
+      .header {
+        height: auto;
+        min-height: 90px;
+        flex-wrap: wrap;
+        padding: 18px 0;
+        gap: 15px;
+      }
+      .nav {
+        order: 3;
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .nav a {
+        padding: 3px 0;
+      }
+      .hero {
+        grid-template-columns: 1fr;
+        padding: 38px 0;
+      }
+      .hero h1 {
+        font-size: 40px;
+      }
+      .visual {
+        height: 320px;
+      }
+      .intro {
+        grid-template-columns: 1fr;
+        gap: 10px;
+      }
+      .guide-grid,
+      .split {
+        grid-template-columns: 1fr;
+      }
+      .card {
+        border-right: 1px solid var(--line);
+      }
+      .reading {
+        display: block;
+        padding: 25px 22px;
+      }
+      .sidebar {
+        border: 0;
+        padding: 0;
+        margin-bottom: 25px;
+      }
+      .sticky {
+        position: static;
+      }
+      .article h1 {
+        font-size: 32px;
+      }
+      .section {
+        padding: 35px 0;
+      }
+      .meta {
+        flex-wrap: wrap;
+        gap: 5px 15px;
+      }
+      .tag {
+        font-size: 9px;
+      }
+      .brand {
+        font-size: 16px;
+      }
+    }
+  </style>
+  <body>
+    <a class="skip" href="#main">跳转到正文</a>
+    <div class="wrap">
+      <header class="header">
+        <a class="brand" href="#home"
+          ><span class="mark" aria-hidden="true"></span
+          ><span>科研团队门户<small>RESEARCH & LEARNING</small></span></a
+        >
+        <nav class="nav" aria-label="全局导航">
+          <a href="#home" data-nav="home">首页</a
+          ><a href="#guide" data-nav="guide">研究生指南</a
+          ><a href="#home-research">研究方向</a
+          ><a href="#home-updates">成果与动态</a>
+        </nav>
+        <span class="tag">排版评审 · 示例内容</span>
+      </header>
+    </div>
+    <main id="main" tabindex="-1">
+      <div id="home-view">
+        <div class="wrap">
+          <section class="hero">
+            <div>
+              <h1>从一个好问题，<br />走向<em>扎实的研究。</em></h1>
+              <p class="lead">
+                连接团队的研究工作与研究生的成长路径。<br />在这里了解研究方向，也找到开始科研的下一步。
+              </p>
+              <div class="actions">
+                <a class="primary" href="#guide">进入研究生指南 ↗</a
+                ><a class="text-link" href="#home-research">了解研究方向 ↓</a>
+              </div>
+            </div>
+            <div
+              class="visual"
+              role="img"
+              aria-label="相交轨道构成的抽象科研图形，非实际数据"
+            >
+              <div class="orbit"></div>
+              <div class="orbit two"></div>
+              <div class="orbit three"></div>
+              <div class="core"></div>
+              <div class="dot"></div>
+              <div class="dot two"></div>
+            </div>
+          </section>
+        </div>
+        <section class="band">
+          <div class="wrap section">
+            <div class="section-head">
+              <div>
+                <div class="eyebrow">GRADUATE HANDBOOK</div>
+                <h2>研究生培养指南</h2>
+                <p>从入门到独立研究，按当前任务寻找答案。</p>
+              </div>
+            </div>
+            <div class="guide-grid">
+              <article class="card feature">
+                <div class="stage">01 / 研一 · 建立基础</div>
+                <h3>先学会读懂一篇论文</h3>
+                <p>从阅读目标、三轮阅读到文献笔记，建立可以持续使用的方法。</p>
+                <a class="text-link" href="#guide">阅读文献阅读指南 →</a>
+              </article>
+              <article class="card">
+                <div class="stage">02 / 研二 · 推进课题</div>
+                <h3>把问题变成研究计划</h3>
+                <p>问题定义、实验设计与阶段复盘，逐步形成自己的研究判断。</p>
+                <span class="pending">栏目规划示例 · 暂无文章</span>
+              </article>
+              <article class="card">
+                <div class="stage">03 / 研三 · 整理与表达</div>
+                <h3>让研究被清楚地理解</h3>
+                <p>组织论文论证，准备学术报告，整理能够交接的研究材料。</p>
+                <span class="pending">栏目规划示例 · 暂无文章</span>
+              </article>
+            </div>
+          </div>
+        </section>
+        <div class="wrap section">
+          <div class="split">
+            <section id="home-research">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">RESEARCH AREAS</div>
+                  <h2>研究方向</h2>
+                </div>
+                <span class="tag">内容示例</span>
+              </div>
+              <article class="direction">
+                <b>01</b>
+                <div>
+                  <h3>可靠的智能系统</h3>
+                  <p>
+                    围绕模型的可靠性与可解释性，理解系统如何作出判断、在什么条件下失效。
+                  </p>
+                </div>
+              </article>
+              <article class="direction">
+                <b>02</b>
+                <div>
+                  <h3>数据驱动的科学发现</h3>
+                  <p>
+                    结合领域知识与计算方法，从真实问题出发建立可验证的研究过程。
+                  </p>
+                </div>
+              </article>
+              <article class="direction">
+                <b>03</b>
+                <div>
+                  <h3>人与技术的协同</h3>
+                  <p>
+                    关注技术使用中的理解、协作与反馈，让研究结果回应具体需求。
+                  </p>
+                </div>
+              </article>
+              <p class="note">以上仅演示信息层次，不代表团队已开展这些研究。</p>
+            </section>
+            <section id="home-updates">
+              <div class="section-head">
+                <div>
+                  <div class="eyebrow">PUBLICATIONS & NEWS</div>
+                  <h2>成果与动态</h2>
+                </div>
+                <span class="tag">内容示例</span>
+              </div>
+              <article class="update">
+                <time>论文<br />示例</time>
+                <div>
+                  <h3>一项研究成果的标题将在这里呈现</h3>
+                  <p>
+                    作者、发表渠道、年份与成果摘要分层展示。正式成果待团队核实后录入。
+                  </p>
+                </div>
+              </article>
+              <article class="update">
+                <time>组会<br />示例</time>
+                <div>
+                  <h3>文献讨论：从研究问题到实验证据</h3>
+                  <p>
+                    活动记录示例。可简述讨论主题、主要收获与关联的培养指南。
+                  </p>
+                </div>
+              </article>
+              <article class="update">
+                <time>指南<br />样例</time>
+                <div>
+                  <h3><a href="#guide">研一文献阅读指南 · 排版样例 ↗</a></h3>
+                  <p>本稿可阅读的完整样例，包含分步建议、对照表和笔记模板。</p>
+                </div>
+              </article>
+              <p class="note">未使用虚构日期、作者、发表数量或团队荣誉。</p>
+            </section>
+          </div>
+        </div>
+        <div class="wrap">
+          <footer class="footer">
+            <span>科研团队门户 / 布局评审稿</span
+            ><span>知识有序积累，研究持续发生。</span>
+          </footer>
+        </div>
+      </div>
+      <div id="guide-view" hidden>
+        <div class="reading">
+          <aside class="sidebar" aria-label="指南目录">
+            <div class="sticky">
+              <div class="side-title">研究生指南</div>
+              <details open>
+                <summary>研一 · 建立基础</summary>
+                <a href="#guide" aria-current="page">文献阅读指南</a
+                ><span class="quiet">研究工具与环境 · 待整理</span
+                ><span class="quiet">第一次组会汇报 · 待整理</span>
+              </details>
+              <details>
+                <summary>研二 · 推进课题</summary>
+                <span class="quiet">内容待整理</span>
+              </details>
+              <details>
+                <summary>研三 · 整理与表达</summary>
+                <span class="quiet">内容待整理</span>
+              </details>
+              <p class="note">
+                本稿展示一篇阅读样例。<br />其余栏目仅展示规划状态。
+              </p>
+            </div>
+          </aside>
+          <article class="article">
+            <div class="crumb">
+              <a href="#home">首页</a> / 研究生指南 / 研一
+            </div>
+            <div class="eyebrow">研一 · 方法入门</div>
+            <h1>如何开始阅读学术文献</h1>
+            <p class="deck">
+              读论文的目标，是建立对问题与证据的判断。先找到阅读目的，再决定在哪里投入时间。
+            </p>
+            <div class="meta">
+              <span>指南正文示例</span><span>适用阶段：研一及科研入门</span
+              ><span>约 6 分钟阅读</span>
+            </div>
+            <div class="callout">
+              <strong>读完之后，你应该能做什么？</strong>
+              <p>
+                用自己的话说明一篇论文的研究问题、主要方法和关键证据，并记录一个需要继续核实的问题。
+              </p>
+            </div>
+            <section id="guide-purpose">
+              <h2>01 · 先明确这次为什么读</h2>
+              <p>
+                打开论文前，先写下一句话：我希望通过这篇文章了解什么？可以是进入一个新方向、理解一种方法，也可以是寻找与当前实验相关的证据。
+              </p>
+              <p>
+                阅读目的不同，投入也不同。初步筛选时不必逐句精读；准备复现时，则需要认真核查实验设置与实现细节。
+              </p>
+              <blockquote>
+                先带着问题进入文献，再让文献帮助你修正问题。
+              </blockquote>
+            </section>
+            <section id="guide-rounds">
+              <h2>02 · 分三轮阅读，而非从头读到尾</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>轮次</th>
+                    <th>重点看什么</th>
+                    <th>留下什么</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>第一轮：判断相关性</td>
+                    <td>标题、摘要、引言、主要图表和结论</td>
+                    <td>研究问题；是否值得继续读</td>
+                  </tr>
+                  <tr>
+                    <td>第二轮：理解论证</td>
+                    <td>核心方法、实验设计与结果解释</td>
+                    <td>问题、方法与证据的关系</td>
+                  </tr>
+                  <tr>
+                    <td>第三轮：核查细节</td>
+                    <td>关键推导、实验条件、附录与实现</td>
+                    <td>可复现细节与待核实的假设</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p>
+                这是一种可调整的阅读节奏，而不是必须依次完成的流程。遇到陌生术语，先判断它是否影响理解主线；把暂时不影响主线的问题记下来，避免不断中断阅读。
+              </p>
+            </section>
+            <section id="guide-evidence">
+              <h2>03 · 沿着证据检查结论</h2>
+              <p>
+                理解作者的主张之后，继续追问证据是否足以支持它。不要只摘录结论，也要记录结论成立的条件。
+              </p>
+              <ol>
+                <li>
+                  <strong>问题是什么？</strong>
+                  它为什么重要，已有工作留下什么缺口？
+                </li>
+                <li>
+                  <strong>比较是否合理？</strong>
+                  基线、数据和评价指标是否与主张匹配？
+                </li>
+                <li>
+                  <strong>结果支持到哪里？</strong>
+                  哪些是直接观察，哪些是解释或推测？
+                </li>
+                <li>
+                  <strong>边界在哪里？</strong>
+                  方法的假设、失败情况与未验证场景是什么？
+                </li>
+              </ol>
+              <div class="callout">
+                <strong>把“不确定”写清楚</strong>
+                <p>
+                  “我还没有理解这一步”比含糊地记下“方法有效”更有用。标注页码、图号或公式编号，方便回查和讨论。
+                </p>
+              </div>
+            </section>
+            <section id="guide-notes">
+              <h2>04 · 留下一页能再次使用的笔记</h2>
+              <p>
+                笔记帮助未来的自己快速恢复上下文。区分作者原文、自己的转述与个人判断；直接引用时记录出处。
+              </p>
+              <pre class="template">
+论文：标题 / 作者 / 年份 / 来源
+阅读目的：我想弄清楚什么？
+研究问题：一句话概括。
+核心方法：关键思路与适用假设。
+关键证据：对应图表、实验或推导位置。
+局限与疑问：哪些结论还需核查？
+下一步：补读、讨论，或尝试一个小实验。</pre
+              >
+            </section>
+            <section id="guide-next">
+              <h2>05 · 用一次讨论检验理解</h2>
+              <p>
+                尝试用三分钟向同伴解释：为什么做、怎么做、证据是什么。如果某一部分讲不清，就回到原文定位，而不是继续堆积笔记。
+              </p>
+              <p>
+                第一次阅读不需要解决所有问题。形成一份有依据的理解，再带着明确疑问进入组会，就是一个扎实的起点。
+              </p>
+            </section>
+            <div class="article-end">
+              <a class="text-link" href="#home">← 返回门户首页</a>
+              <p class="note">
+                本文为排版评审编写的建议示例，尚非团队正式发布指南。
+              </p>
+            </div>
+          </article>
+          <aside class="toc" aria-label="本页目录">
+            <div class="sticky">
+              <strong>本页目录</strong>
+              <nav>
+                <a href="#guide-purpose">明确阅读目的</a
+                ><a href="#guide-rounds">分三轮阅读</a
+                ><a href="#guide-evidence">检查结论与证据</a
+                ><a href="#guide-notes">一页文献笔记</a
+                ><a href="#guide-next">讨论与下一步</a>
+              </nav>
+              <p class="note">先有问题，<br />再寻找证据。</p>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </main>
+    <script>
+      const home = document.getElementById("home-view"),
+        guide = document.getElementById("guide-view");
+      function route() {
+        const hash = location.hash || "#home",
+          isGuide = hash.startsWith("#guide");
+        home.hidden = isGuide;
+        guide.hidden = !isGuide;
+        document.title = isGuide
+          ? "如何开始阅读学术文献 · 研究生指南"
+          : "科研团队门户 · 排版评审稿";
+        document.querySelectorAll("[data-nav]").forEach((a) => {
+          const active = a.dataset.nav === (isGuide ? "guide" : "home");
+          a.classList.toggle("active", active);
+          if (active) a.setAttribute("aria-current", "page");
+          else a.removeAttribute("aria-current");
+        });
+        document
+          .querySelectorAll(".toc a")
+          .forEach((a) => a.classList.toggle("active", a.hash === hash));
+        if (hash === "#home" || hash === "#guide") window.scrollTo(0, 0);
+        else
+          requestAnimationFrame(() =>
+            document.getElementById(hash.slice(1))?.scrollIntoView(),
+          );
+      }
+      window.addEventListener("hashchange", route);
+      route();
+    </script>
+  </body>
+</html>
