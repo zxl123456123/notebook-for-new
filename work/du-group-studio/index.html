@@ -1099,6 +1099,138 @@
           transform: none !important;
         }
       }
+      .manuscript-tool {
+        position: absolute;
+        right: 9%;
+        bottom: 13%;
+        z-index: 4;
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        border: 0;
+        background: transparent;
+        padding: 12px;
+        color: #254d3c;
+        font-size: 12px;
+        letter-spacing: 0.04em;
+      }
+      .tool-glass {
+        display: block;
+        width: 39px;
+        height: 39px;
+        border-radius: 50%;
+        border: 4px solid #a48b51;
+        background: #dae3ccaa;
+        position: relative;
+        box-shadow:
+          inset 0 0 0 2px #e5d19a,
+          inset 4px 4px 8px #fff9,
+          3px 5px 5px #263c3440;
+        transform: rotate(-32deg);
+        margin-right: 9px;
+      }
+      .tool-glass:before {
+        content: "";
+        position: absolute;
+        width: 9px;
+        height: 25px;
+        top: 31px;
+        left: 11px;
+        background: linear-gradient(90deg, #183c2d, #45664d, #183c2d);
+        border-top: 5px solid #b69a5c;
+        border-radius: 0 0 4px 4px;
+        box-shadow: 2px 3px 3px #263c3433;
+      }
+      .tool-glass:after {
+        content: "+";
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        font:
+          23px Georgia,
+          serif;
+        transform: rotate(32deg);
+      }
+      .manuscript-tool[aria-expanded="true"] .tool-glass:after {
+        content: "−";
+      }
+      .manuscript-surface {
+        position: absolute;
+        left: 49%;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 2;
+        cursor: crosshair;
+        touch-action: none;
+      }
+      .manuscript-surface:focus-visible {
+        outline: 1px dashed #78866a;
+        outline-offset: -4px;
+      }
+      .manuscript-lens {
+        position: absolute;
+        width: 230px;
+        height: 230px;
+        border-radius: 50%;
+        pointer-events: none;
+        border: 7px solid #a48b51;
+        background-color: #f7f4e9;
+        background-repeat: no-repeat;
+        background-origin: padding-box;
+        box-shadow:
+          0 0 0 2px #405140,
+          inset 0 0 0 2px #ead7a3,
+          8px 14px 22px #213e3440;
+      }
+      .manuscript-lens:after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        box-shadow:
+          inset 4px 5px 12px #fff5,
+          inset -3px -4px 8px #274c3522;
+      }
+      .manuscript-help {
+        position: absolute;
+        right: 9%;
+        bottom: 6%;
+        z-index: 3;
+        margin: 0;
+        font-size: 11px;
+        color: #3e5744;
+      }
+      .hero.is-magnifying .hero-art {
+        transform: none !important;
+        transition: none !important;
+      }
+      .manuscript-surface[hidden],
+      .manuscript-help[hidden] {
+        display: none;
+      }
+      @media (max-width: 650px) {
+        .manuscript-tool {
+          right: 2%;
+          bottom: 8%;
+        }
+        .manuscript-surface {
+          left: 0;
+          top: 330px;
+        }
+        .manuscript-lens {
+          width: 170px;
+          height: 170px;
+          border-width: 5px;
+        }
+        .manuscript-help {
+          right: 3%;
+          bottom: 2%;
+          font-size: 10px;
+        }
+      }
+    @media (max-width:650px){.hero{overflow-x:clip;}}
     </style>
   </head>
   <body>
@@ -1110,7 +1242,8 @@
         >
         <nav aria-label="主导航">
           <a href="#about">关于我们</a><a href="#research">研究方向</a
-          ><a href="#notebooks" data-open="guide">学生专栏</a><a href="archive.html">组内档案</a>
+          ><a href="#notebooks" data-open="guide">学生专栏</a
+          ><a href="archive.html">组内档案</a>
         </nav>
       </header>
       <main id="main">
@@ -1122,6 +1255,34 @@
             width="1536"
             height="1024"
           />
+          <button
+            type="button"
+            class="manuscript-tool"
+            id="manuscript-toggle"
+            aria-expanded="false"
+            aria-controls="manuscript-surface"
+          >
+            <span class="tool-glass" aria-hidden="true"></span
+            ><span id="manuscript-action">放大研究手稿</span>
+          </button>
+          <div
+            id="manuscript-surface"
+            class="manuscript-surface"
+            tabindex="0"
+            role="group"
+            aria-label="研究手稿放大镜，移动指针或拖动查看，方向键移动，Escape 收起"
+            aria-describedby="manuscript-help"
+            hidden
+          >
+            <div
+              class="manuscript-lens"
+              id="manuscript-lens"
+              aria-hidden="true"
+            ></div>
+          </div>
+          <p class="manuscript-help" id="manuscript-help" hidden>
+            移动或拖动查看 · 方向键移动 · Esc 收起
+          </p>
           <div class="hero-copy reveal-in">
             <p class="affiliation">华东理工大学 · 信息科学与工程学院</p>
             <h1 id="hero-title">Du's Group</h1>
@@ -1528,7 +1689,12 @@
         const motion = matchMedia("(prefers-reduced-motion: reduce)");
         const hero = document.querySelector(".hero");
         hero.addEventListener("pointermove", (event) => {
-          if (motion.matches || event.pointerType === "touch") return;
+          if (
+            motion.matches ||
+            hero.classList.contains("is-magnifying") ||
+            event.pointerType === "touch"
+          )
+            return;
           const rect = hero.getBoundingClientRect();
           hero.style.setProperty(
             "--px",
@@ -1539,6 +1705,102 @@
             ((event.clientY - rect.top) / rect.height - 0.5) * 7 + "px",
           );
         });
+        const art = hero.querySelector(".hero-art");
+        const magnifier = document.getElementById("manuscript-toggle");
+        const surface = document.getElementById("manuscript-surface");
+        const lens = document.getElementById("manuscript-lens");
+        const lensHelp = document.getElementById("manuscript-help");
+        let magnifying = false;
+        let lensPoint = { x: 0.55, y: 0.42 };
+        function drawLens() {
+          if (!magnifying || !art.naturalWidth) return;
+          const area = surface.getBoundingClientRect();
+          const image = art.getBoundingClientRect();
+          const radius = lens.offsetWidth / 2;
+          const x = Math.max(
+            radius,
+            Math.min(area.width - radius, lensPoint.x * area.width),
+          );
+          const y = Math.max(
+            radius,
+            Math.min(area.height - radius, lensPoint.y * area.height),
+          );
+          lensPoint = { x: x / area.width, y: y / area.height };
+          const scale = Math.max(
+            image.width / art.naturalWidth,
+            image.height / art.naturalHeight,
+          );
+          const width = art.naturalWidth * scale;
+          const height = art.naturalHeight * scale;
+          const position = getComputedStyle(art)
+            .objectPosition.split(" ")
+            .map(parseFloat);
+          const offsetX = ((image.width - width) * position[0]) / 100;
+          const offsetY = ((image.height - height) * position[1]) / 100;
+          const sampleX = area.left + x - image.left - offsetX;
+          const sampleY = area.top + y - image.top - offsetY;
+          const zoom = 2;
+          lens.style.left = x - radius + "px";
+          lens.style.top = y - radius + "px";
+          lens.style.backgroundImage = 'url("' + art.currentSrc + '")';
+          lens.style.backgroundSize =
+            width * zoom + "px " + height * zoom + "px";
+          lens.style.backgroundPosition =
+            lens.clientWidth / 2 -
+            sampleX * zoom +
+            "px " +
+            (lens.clientHeight / 2 - sampleY * zoom) +
+            "px";
+        }
+        function setMagnifier(open) {
+          magnifying = open;
+          hero.classList.toggle("is-magnifying", open);
+          magnifier.setAttribute("aria-expanded", String(open));
+          document.getElementById("manuscript-action").textContent = open
+            ? "收起放大镜"
+            : "放大研究手稿";
+          surface.hidden = lensHelp.hidden = !open;
+          if (open) {
+            drawLens();
+            surface.focus({ preventScroll: true });
+          } else magnifier.focus({ preventScroll: true });
+        }
+        magnifier.addEventListener("click", () => setMagnifier(!magnifying));
+        function pointLens(event) {
+          if (!magnifying) return;
+          const rect = surface.getBoundingClientRect();
+          lensPoint = {
+            x: (event.clientX - rect.left) / rect.width,
+            y: (event.clientY - rect.top) / rect.height,
+          };
+          drawLens();
+        }
+        surface.addEventListener("pointermove", pointLens);
+        surface.addEventListener("pointerdown", (event) => {
+          surface.setPointerCapture(event.pointerId);
+          pointLens(event);
+        });
+        surface.addEventListener("keydown", (event) => {
+          const delta = event.shiftKey ? 40 : 16;
+          const rect = surface.getBoundingClientRect();
+          if (event.key === "ArrowLeft") lensPoint.x -= delta / rect.width;
+          else if (event.key === "ArrowRight")
+            lensPoint.x += delta / rect.width;
+          else if (event.key === "ArrowUp") lensPoint.y -= delta / rect.height;
+          else if (event.key === "ArrowDown")
+            lensPoint.y += delta / rect.height;
+          else return;
+          event.preventDefault();
+          drawLens();
+        });
+        document.addEventListener("keydown", (event) => {
+          if (magnifying && event.key === "Escape") {
+            event.preventDefault();
+            setMagnifier(false);
+          }
+        });
+        addEventListener("resize", drawLens);
+        art.addEventListener("load", drawLens);
         hero.addEventListener("pointerleave", () => {
           hero.style.setProperty("--px", "0px");
           hero.style.setProperty("--py", "0px");
