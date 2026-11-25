@@ -1,0 +1,929 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Du's Group · 一起探索，向更优处</title>
+    <style>
+      :root {
+        --paper: #fff5e9;
+        --ink: #38263c;
+        --muted: #756675;
+        --coral: #e77a61;
+        --line: #daccc8;
+        --lilac: #d9c9ee;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 32px;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+      }
+      a:focus-visible,
+      button:focus-visible {
+        outline: 3px solid #9b492e;
+        outline-offset: 6px;
+      }
+      .skip {
+        position: absolute;
+        top: -100px;
+      }
+      .skip:focus {
+        top: 12px;
+        background: white;
+        z-index: 4;
+      }
+      .wrap {
+        max-width: 1440px;
+        margin: auto;
+        padding: 0 64px;
+      }
+      header {
+        height: 104px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+      }
+      .brand {
+        font-family: Georgia, serif;
+        font-size: 27px;
+        letter-spacing: -1px;
+      }
+      .brand i {
+        font-size: 15px;
+        color: var(--coral);
+        margin-right: 9px;
+      }
+      nav {
+        display: flex;
+        gap: 36px;
+        font-size: 14px;
+      }
+      nav a {
+        position: relative;
+        padding: 10px 0;
+      }
+      nav a:after {
+        content: "";
+        position: absolute;
+        left: 0;
+        bottom: 1px;
+        width: 0;
+        height: 2px;
+        background: var(--coral);
+        transition: width 0.25s;
+      }
+      nav a:hover:after {
+        width: 100%;
+      }
+      .nav-last {
+        border: 1px solid var(--line);
+        border-radius: 30px;
+        padding: 10px 20px;
+      }
+      .hero {
+        position: relative;
+        padding-top: 41px;
+      }
+      .hero-kicker {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        letter-spacing: 1.3px;
+      }
+      .hero h1 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(110px, 13.4vw, 194px);
+        font-weight: normal;
+        letter-spacing: -0.075em;
+        line-height: 1.02;
+        margin: 20px 0 17px;
+      }
+      .hero h1 span {
+        color: var(--coral);
+      }
+      .hero-sub {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 24px;
+      }
+      .hero-sub p {
+        font-size: 15px;
+        line-height: 1.8;
+        margin: 0;
+      }
+      .round-link {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+      .arrow {
+        width: 45px;
+        height: 45px;
+        display: grid;
+        place-items: center;
+        border: 1px solid var(--ink);
+        border-radius: 50%;
+        transition:
+          transform 0.3s,
+          background 0.3s;
+      }
+      .round-link:hover .arrow {
+        transform: rotate(40deg);
+        background: var(--lilac);
+      }
+      .landscape {
+        height: 350px;
+        position: relative;
+        margin: 25px -64px 0;
+        overflow: hidden;
+        background: #f7e8dd;
+      }
+      .landscape canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .landscape-note {
+        position: absolute;
+        bottom: 25px;
+        left: 64px;
+        font-family: Georgia, serif;
+        font-style: italic;
+        font-size: 24px;
+        pointer-events: none;
+      }
+      .motion-toggle {
+        position: absolute;
+        bottom: 22px;
+        right: 64px;
+        background: var(--paper);
+        border: 1px solid #9b8798;
+        border-radius: 30px;
+        padding: 9px 15px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+      .below-hero {
+        display: flex;
+        justify-content: space-between;
+        padding: 21px 0;
+        border-bottom: 1px solid var(--line);
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .section {
+        padding: 97px 0;
+      }
+      .eyebrow {
+        font-size: 12px;
+        letter-spacing: 2px;
+        margin: 0 0 20px;
+        color: var(--muted);
+      }
+      .intro {
+        display: grid;
+        grid-template-columns: 1fr 1.15fr;
+        gap: 100px;
+      }
+      .intro h2 {
+        font-size: 43px;
+        font-weight: 500;
+        line-height: 1.5;
+        letter-spacing: -2px;
+        margin: 0;
+      }
+      .intro h2 em {
+        font-family: Georgia, serif;
+        font-weight: normal;
+        color: #b65c49;
+      }
+      .intro-copy {
+        font-size: 17px;
+        line-height: 2.1;
+        padding-top: 37px;
+      }
+      .intro-copy p {
+        margin: 0 0 28px;
+      }
+      .directions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0 28px;
+        font-size: 14px;
+      }
+      .directions span {
+        padding: 14px 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .directions b {
+        font-size: 11px;
+        font-weight: 400;
+        margin-right: 13px;
+        color: #804c3e;
+      }
+      .learning {
+        background: #ede4ee;
+        padding: 86px 64px 72px;
+        margin: 0 -64px;
+      }
+      .section-title {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        margin-bottom: 39px;
+      }
+      .section-title h2 {
+        font-size: 40px;
+        font-weight: 500;
+        letter-spacing: -1.7px;
+        margin: 0;
+      }
+      .section-title p {
+        font-size: 14px;
+        color: var(--muted);
+        margin: 0 0 5px;
+      }
+      .columns {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+      .column {
+        display: flex;
+        flex-direction: column;
+        min-height: 185px;
+        text-align: left;
+        padding: 26px 24px;
+        border: 0;
+        background: #faf5f5;
+        cursor: pointer;
+        transition:
+          transform 0.3s,
+          background 0.3s,
+          box-shadow 0.3s;
+        position: relative;
+      }
+      .column:hover {
+        transform: translateY(-7px);
+      }
+      .column[aria-pressed="true"] {
+        background: var(--ink);
+        color: var(--paper);
+        box-shadow: 0 8px 0 #d9bbd1;
+      }
+      .column .num {
+        font-family: Georgia, serif;
+        font-size: 15px;
+      }
+      .column h3 {
+        font-size: 24px;
+        font-weight: 500;
+        margin: 34px 0 12px;
+      }
+      .column p {
+        font-size: 13px;
+        line-height: 1.9;
+        margin: 0;
+        opacity: 0.8;
+      }
+      .column .go {
+        position: absolute;
+        right: 24px;
+        top: 24px;
+        font-size: 23px;
+      }
+      .column[aria-pressed="true"] .go {
+        transform: rotate(45deg);
+      }
+      .detail {
+        margin-top: 44px;
+        padding-top: 30px;
+        border-top: 1px solid #cdbdce;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 45px;
+      }
+      .detail h3 {
+        font-size: 24px;
+        font-weight: 500;
+        margin: 2px 0 10px;
+      }
+      .detail-label {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .detail-body p {
+        font-size: 15px;
+        line-height: 1.9;
+        margin: 0 0 21px;
+      }
+      .detail-body ol {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 22px;
+        counter-reset: steps;
+      }
+      .detail-body li {
+        font-size: 14px;
+        line-height: 1.8;
+        border-top: 1px solid #cdbdce;
+        padding-top: 15px;
+      }
+      .detail-body li:before {
+        counter-increment: steps;
+        content: "0" counter(steps);
+        display: block;
+        color: #8c657e;
+        font-family: Georgia, serif;
+        margin-bottom: 8px;
+      }
+      .closing {
+        padding: 85px 0 70px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .closing h2 {
+        font-family: Georgia, serif;
+        font-size: 72px;
+        font-weight: normal;
+        letter-spacing: -3px;
+        margin: 0 0 15px;
+      }
+      .closing p {
+        font-size: 15px;
+        color: var(--muted);
+      }
+      .closing-mark {
+        width: 104px;
+        height: 104px;
+        border-radius: 50%;
+        background: var(--coral);
+        display: grid;
+        place-items: center;
+        font-size: 45px;
+        transform: rotate(-25deg);
+      }
+      footer {
+        padding: 26px 0 33px;
+        border-top: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .reveal {
+        transition:
+          opacity 0.8s,
+          transform 0.8s;
+      }
+      .js-motion .reveal:not(.visible) {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      @media (min-width: 1500px) {
+        .landscape {
+          height: 390px;
+        }
+      }
+      @media (max-width: 900px) {
+        .wrap {
+          padding: 0 28px;
+        }
+        header {
+          height: 85px;
+        }
+        nav {
+          gap: 18px;
+        }
+        .hero h1 {
+          font-size: 15vw;
+        }
+        .hero-kicker {
+          font-size: 10px;
+        }
+        .hero-sub p {
+          max-width: 70%;
+          font-size: 13px;
+        }
+        .landscape {
+          margin-left: -28px;
+          margin-right: -28px;
+          height: 300px;
+        }
+        .landscape-note {
+          left: 28px;
+        }
+        .motion-toggle {
+          right: 28px;
+        }
+        .intro {
+          gap: 35px;
+        }
+        .intro h2 {
+          font-size: 34px;
+        }
+        .intro-copy {
+          padding-top: 15px;
+          font-size: 15px;
+        }
+        .learning {
+          margin: 0 -28px;
+          padding: 65px 28px;
+        }
+        .columns {
+          gap: 10px;
+        }
+        .column {
+          padding: 20px 15px;
+        }
+        .column h3 {
+          font-size: 20px;
+        }
+        .detail {
+          gap: 20px;
+        }
+        .closing h2 {
+          font-size: 55px;
+        }
+      }
+      @media (max-width: 620px) {
+        nav {
+          gap: 16px;
+        }
+        nav a:first-child,
+        .nav-last {
+          display: none;
+        }
+        .brand {
+          font-size: 23px;
+        }
+        .hero-kicker span:last-child {
+          display: none;
+        }
+        .hero-sub {
+          align-items: start;
+        }
+        .hero-sub p {
+          max-width: 65%;
+        }
+        .round-link {
+          gap: 8px;
+          font-size: 12px;
+        }
+        .arrow {
+          width: 32px;
+          height: 32px;
+        }
+        .landscape {
+          height: 260px;
+        }
+        .landscape-note {
+          font-size: 19px;
+        }
+        .below-hero span:last-child {
+          display: none;
+        }
+        .section {
+          padding: 65px 0;
+        }
+        .intro {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+        .intro h2 {
+          font-size: 35px;
+        }
+        .columns {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+        .column {
+          min-height: 210px;
+        }
+        .column h3 {
+          margin-top: 29px;
+        }
+        .section-title {
+          display: block;
+        }
+        .section-title h2 {
+          font-size: 32px;
+          margin-bottom: 12px;
+        }
+        .detail {
+          grid-template-columns: 1fr;
+        }
+        .detail-body ol {
+          grid-template-columns: 1fr;
+          gap: 13px;
+        }
+        .detail-body li:before {
+          display: inline;
+          margin-right: 12px;
+        }
+        .closing h2 {
+          font-size: 44px;
+        }
+        .closing-mark {
+          width: 62px;
+          height: 62px;
+          font-size: 30px;
+        }
+        footer span:last-child {
+          display: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *:before,
+        *:after {
+          transition: none !important;
+        }
+        .js-motion .reveal:not(.visible) {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      .hero-sub p {
+        font-size: clamp(19px, 1.5vw, 23px);
+        color: #604160;
+      }
+      .hero-kicker {
+        font-size: 16px;
+        letter-spacing: 0;
+        color: #61445b;
+      }
+      .research-link {
+        color: #814233;
+        text-decoration: underline;
+        text-underline-offset: 5px;
+      }
+      .intro-copy {
+        padding-top: 0;
+      }
+      .hero h1 span {
+        color: #b95846;
+      }
+      .column h3 {
+        margin-top: 14px;
+      }
+      nav {
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#about">跳到团队介绍</a>
+    <div class="wrap">
+      <header>
+        <a class="brand" href="#top"><i>✳</i> Du's Group</a>
+        <nav aria-label="主要导航">
+          <a href="#about">认识我们</a><a href="#research">研究方向</a
+          ><a class="nav-last" href="#handbook">学生专栏 ↗</a>
+        </nav>
+      </header>
+      <main id="top">
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="hero-kicker">
+            <span>华东理工大学 · 信息科学与工程学院</span>
+          </div>
+          <h1 id="hero-title">Du's <span>Group</span></h1>
+          <div class="hero-sub">
+            <p>堵威课题组 · 智能优化理论、方法与应用</p>
+            <a class="round-link" href="#about"
+              >认识团队 <span class="arrow" aria-hidden="true">↗</span></a
+            >
+          </div>
+          <div class="landscape">
+            <canvas id="terrain" aria-hidden="true"></canvas
+            ><button
+              id="motion"
+              class="motion-toggle"
+              type="button"
+              aria-pressed="false"
+            >
+              Ⅱ 暂停动态
+            </button>
+          </div>
+        </section>
+        <section class="section intro reveal" id="about">
+          <div><h2>团队介绍</h2></div>
+          <div class="intro-copy">
+            <p>
+              导师堵威教授带领团队研究智能优化，关注复杂工业过程中如何作出更好的决策。
+            </p>
+            <div id="research">
+              <h3>研究方向</h3>
+              <div class="directions">
+                <span>进化计算</span><span>大规模优化</span><span>鲁棒优化</span
+                ><span>复杂工业过程决策优化</span>
+              </div>
+            </div>
+            <p>
+              <a
+                class="research-link"
+                href="https://faculty.ecust.edu.cn/cise/dw/main.htm"
+                target="_blank"
+                rel="noopener"
+                >查看导师介绍与研究成果 ↗</a
+              >
+            </p>
+          </div>
+        </section>
+        <section
+          class="learning reveal"
+          id="handbook"
+          aria-labelledby="learning-title"
+        >
+          <div class="section-title">
+            <div><h2 id="learning-title">学生专栏</h2></div>
+          </div>
+          <div class="columns" aria-label="培养指南栏目">
+            <button
+              class="column"
+              type="button"
+              data-column="0"
+              aria-pressed="true"
+              aria-controls="column-detail"
+            >
+              <span class="go" aria-hidden="true">↗</span>
+              <h3>新生指南</h3>
+              <p>从初来乍到，<br />到找到自己的研究节奏。</p>
+            </button>
+            <button
+              class="column"
+              type="button"
+              data-column="1"
+              aria-pressed="false"
+              aria-controls="column-detail"
+            >
+              <span class="go" aria-hidden="true">↗</span>
+              <h3>科研经验</h3>
+              <p>把阅读、实验与表达，<br />变成可以积累的方法。</p>
+            </button>
+            <button
+              class="column"
+              type="button"
+              data-column="2"
+              aria-pressed="false"
+              aria-controls="column-detail"
+            >
+              <span class="go" aria-hidden="true">↗</span>
+              <h3>学硕专栏</h3>
+              <p>围绕研究问题，<br />建立扎实的学术训练。</p>
+            </button>
+            <button
+              class="column"
+              type="button"
+              data-column="3"
+              aria-pressed="false"
+              aria-controls="column-detail"
+            >
+              <span class="go" aria-hidden="true">↗</span>
+              <h3>专硕专栏</h3>
+              <p>从实际需求出发，<br />连接研究方法与工程实践。</p>
+            </button>
+          </div>
+          <div class="detail" id="column-detail" aria-live="polite">
+            <div>
+              <span class="detail-label">先从这三件事开始</span>
+              <h3 id="detail-title">给新的阶段，一点准备。</h3>
+              <span class="detail-label">栏目内容示例 · 非正式培养要求</span>
+            </div>
+            <div class="detail-body">
+              <p id="detail-intro">
+                不急着一次弄懂所有事情。先把问题、资料与交流的方式准备好，让每一步都有着落。
+              </p>
+              <ol id="detail-steps">
+                <li>写下你对研究方向的理解，以及最想弄清楚的一个问题。</li>
+                <li>建立文献与笔记目录，记录来源、疑问和下一步。</li>
+                <li>和导师讨论当前任务，把近期目标拆成可检查的小步。</li>
+              </ol>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer>
+        <span>Du's Group / 华东理工大学 · 堵威课题组</span
+        ><a href="#top">回到顶部 ↑</a>
+      </footer>
+    </div>
+    <script>
+      const canvas = document.querySelector("#terrain"),
+        ctx = canvas.getContext("2d"),
+        motion = document.querySelector("#motion"),
+        preference = matchMedia("(prefers-reduced-motion: reduce)");
+      let onScreen = true;
+      if (window.IntersectionObserver) {
+        new IntersectionObserver((entries) => {
+          onScreen = entries[0].isIntersecting;
+        }).observe(canvas);
+      }
+      let paused = preference.matches,
+        time = 0,
+        last = 0,
+        width = 0,
+        height = 0,
+        pointer = 0,
+        target = 0,
+        frame;
+      function resize() {
+        const box = canvas.getBoundingClientRect();
+        width = box.width;
+        height = box.height;
+        const dpr = Math.min(devicePixelRatio || 1, 2);
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        draw();
+      }
+      function hill(x, z) {
+        return (
+          Math.sin(x * 5.2 + z * 2.3 + time * 0.23) * 0.18 +
+          Math.cos(x * 3.4 - z * 4 + time * 0.18) * 0.16 +
+          Math.exp(-Math.pow((x - 0.28) * 3, 2)) *
+            Math.sin(z * 3.8 + time * 0.2) *
+            0.25
+        );
+      }
+      function point(x, z) {
+        const depth = 0.26 + z * 0.74;
+        return [
+          width * (0.49 + (x - 0.5) * (1.6 - depth * 0.24)) + pointer * 18 * z,
+          height * (0.21 + z * 0.66 - hill(x, z) * (0.45 + z * 0.4)),
+        ];
+      }
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+        let bg = ctx.createLinearGradient(0, 0, width, height);
+        bg.addColorStop(0, "#f6ded0");
+        bg.addColorStop(0.55, "#edd6d5");
+        bg.addColorStop(1, "#cfc3e7");
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, width, height);
+        ctx.fillStyle = "#e5a18a";
+        ctx.beginPath();
+        ctx.arc(
+          width * 0.76,
+          height * 0.22,
+          Math.min(width * 0.06, 72),
+          0,
+          Math.PI * 2,
+        );
+        ctx.fill();
+        for (let zi = 0; zi < 59; zi++) {
+          let z = zi / 58;
+          ctx.beginPath();
+          for (let xi = 0; xi <= 130; xi++) {
+            let [x, y] = point(xi / 130, z);
+            xi ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+          }
+          ctx.strokeStyle =
+            zi < 17 ? "rgba(100,71,119,.45)" : "rgba(78,48,91,.69)";
+          ctx.lineWidth = zi % 6 === 0 ? 1.35 : 0.7;
+          ctx.stroke();
+        }
+        for (let xi = 0; xi < 55; xi++) {
+          ctx.beginPath();
+          for (let zi = 0; zi <= 65; zi++) {
+            let [x, y] = point(xi / 54, zi / 65);
+            zi ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+          }
+          ctx.strokeStyle = "rgba(110,65,109,.17)";
+          ctx.lineWidth = 0.6;
+          ctx.stroke();
+        }
+      }
+      function tick(now) {
+        if (!paused && !document.hidden && onScreen) {
+          time += Math.min((now - last) / 1000, 0.05) || 0;
+          pointer += (target - pointer) * 0.025;
+          draw();
+        }
+        last = now;
+        frame = requestAnimationFrame(tick);
+      }
+      function syncMotion() {
+        motion.setAttribute("aria-pressed", String(paused));
+        motion.textContent = paused ? "▷ 播放动态" : "Ⅱ 暂停动态";
+      }
+      motion.addEventListener("click", () => {
+        paused = !paused;
+        syncMotion();
+      });
+      preference.addEventListener("change", () => {
+        paused = preference.matches;
+        syncMotion();
+      });
+      canvas.parentElement.addEventListener("pointermove", (e) => {
+        target =
+          (e.clientX - canvas.getBoundingClientRect().left) / width - 0.5;
+      });
+      canvas.parentElement.addEventListener("pointerleave", () => (target = 0));
+      window.addEventListener("resize", resize);
+      resize();
+      syncMotion();
+      frame = requestAnimationFrame(tick);
+      const content = [
+        [
+          "给新的阶段，一点准备。",
+          "不急着一次弄懂所有事情。先把问题、资料与交流的方式准备好，让每一步都有着落。",
+          [
+            "写下你对研究方向的理解，以及最想弄清楚的一个问题。",
+            "建立文献与笔记目录，记录来源、疑问和下一步。",
+            "和导师讨论当前任务，把近期目标拆成可检查的小步。",
+          ],
+        ],
+        [
+          "让经验，成为下一次的起点。",
+          "从阅读到实验，再到清楚地表达：留下过程，比只留下结果更容易帮助未来的自己。",
+          [
+            "带着问题阅读文献，区分作者的结论、证据与自己的判断。",
+            "记录数据、参数和运行环境，让实验结果可以回查。",
+            "汇报时先说明问题，再用关键证据讲清楚进展与困难。",
+          ],
+        ],
+        [
+          "沿着问题，把研究做深。",
+          "围绕清楚的研究问题组织阅读、方法与实验，逐步形成有证据支撑的论证。",
+          [
+            "梳理已有工作，明确当前问题与已有方法的差别。",
+            "定义比较基线、评价指标与实验条件，再检验方法。",
+            "整理结论成立的条件、局限及值得继续追问的方向。",
+          ],
+        ],
+        [
+          "把方法，放进真实场景。",
+          "从具体需求和约束出发，让研究过程与工程验证彼此连接。",
+          [
+            "了解任务目标、业务约束和数据条件，明确需要解决什么。",
+            "建立可运行的基础方案，在真实约束下评估改进。",
+            "整理实现、验证结果与使用说明，为后续交接保留依据。",
+          ],
+        ],
+      ];
+      document.querySelectorAll("[data-column]").forEach((button) =>
+        button.addEventListener("click", () => {
+          document
+            .querySelectorAll("[data-column]")
+            .forEach((item) =>
+              item.setAttribute("aria-pressed", String(item === button)),
+            );
+          let [title, intro, steps] = content[Number(button.dataset.column)];
+          document.querySelector("#detail-title").textContent = title;
+          document.querySelector("#detail-intro").textContent = intro;
+          document.querySelector("#detail-steps").replaceChildren(
+            ...steps.map((text) => {
+              let li = document.createElement("li");
+              li.textContent = text;
+              return li;
+            }),
+          );
+        }),
+      );
+      if ("IntersectionObserver" in window) {
+        document.documentElement.classList.add("js-motion");
+        let observer = new IntersectionObserver(
+          (entries) =>
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("visible");
+                observer.unobserve(entry.target);
+              }
+            }),
+          { threshold: 0.12 },
+        );
+        document
+          .querySelectorAll(".reveal")
+          .forEach((element) => observer.observe(element));
+      }
+    </script>
+  </body>
+</html>
