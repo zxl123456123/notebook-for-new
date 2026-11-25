@@ -1,0 +1,1086 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f4e9" />
+    <title>Du's Group · 课题组的书桌</title>
+    <style>
+      :root {
+        --paper: #f7f4e9;
+        --ink: #254d3c;
+        --body: #465247;
+        --muted: #777d6f;
+        --line: #d6d6c4;
+        --orange: #c96c37;
+        --px: 0px;
+        --py: 0px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+        scroll-padding-top: 32px;
+      }
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--body);
+        font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+        line-height: 1.8;
+      }
+      body:before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        z-index: 20;
+        opacity: 0.1;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Cpath fill='%236d644b' filter='url(%23n)' opacity='.28' d='M0 0h160v160H0z'/%3E%3C/svg%3E");
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+      button {
+        font: inherit;
+        color: inherit;
+        cursor: pointer;
+      }
+      button,
+      a {
+        -webkit-tap-highlight-color: transparent;
+      }
+      button:focus-visible,
+      a:focus-visible {
+        outline: 3px solid #a75c2f;
+        outline-offset: 6px;
+      }
+      .skip {
+        position: absolute;
+        top: -80px;
+        left: 20px;
+        z-index: 30;
+      }
+      .skip:focus {
+        top: 10px;
+        background: var(--paper);
+        padding: 8px 16px;
+      }
+      .frame {
+        max-width: 1640px;
+        margin: auto;
+        padding: 0 6.2vw;
+      }
+      header {
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+        z-index: 3;
+      }
+      .desk-mark {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        letter-spacing: 0.12em;
+        color: var(--ink);
+      }
+      .mark {
+        width: 29px;
+        height: 34px;
+        border: 1px solid var(--ink);
+        border-radius: 2px 2px 8px 2px;
+        display: grid;
+        place-items: center;
+        font-family: Georgia, serif;
+        font-style: italic;
+        font-size: 25px;
+        transform: rotate(-8deg);
+      }
+      nav {
+        display: flex;
+        gap: 38px;
+        font-size: 13px;
+      }
+      nav a {
+        padding: 7px 0;
+        border-bottom: 1px solid transparent;
+      }
+      nav a:hover {
+        border-color: var(--ink);
+      }
+      .hero {
+        position: relative;
+        min-height: 680px;
+        height: min(760px, 54vw);
+        isolation: isolate;
+        display: flex;
+        align-items: center;
+      }
+      .hero-art {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        left: 0;
+        top: 0;
+        object-fit: cover;
+        object-position: center;
+        mix-blend-mode: multiply;
+        z-index: -1;
+        transform: translate(var(--px), var(--py));
+        transition: transform 0.7s ease-out;
+        pointer-events: none;
+      }
+      .hero-copy {
+        width: 48%;
+        padding-bottom: 48px;
+        position: relative;
+        z-index: 1;
+      }
+      .affiliation {
+        font-size: 12px;
+        letter-spacing: 0.13em;
+        margin: 0 0 36px;
+        color: #666e5c;
+      }
+      .hero h1 {
+        font-family: Georgia, "Times New Roman", serif;
+        font-style: italic;
+        font-weight: 400;
+        color: var(--ink);
+        font-size: clamp(76px, 8.7vw, 142px);
+        line-height: 0.96;
+        letter-spacing: -0.075em;
+        white-space: nowrap;
+        margin: 0 0 32px;
+      }
+      .hero-description {
+        font-size: 15px;
+        max-width: 340px;
+        line-height: 2;
+        margin: 0 0 34px;
+      }
+      .entry {
+        display: inline-flex;
+        align-items: center;
+        gap: 30px;
+        background: var(--ink);
+        color: #faf6e9;
+        border: 0;
+        padding: 13px 21px;
+        border-radius: 2px;
+        font-size: 14px;
+        box-shadow: 3px 4px 0 #d6d7c2;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+      .entry:hover {
+        transform: translateY(-3px);
+        box-shadow: 3px 7px 0 #d6d7c2;
+      }
+      .entry span {
+        font-family: Georgia, serif;
+        font-size: 23px;
+      }
+      .hero-foot {
+        position: absolute;
+        bottom: 28px;
+        left: 0;
+        color: #7b806f;
+        font-size: 11px;
+        letter-spacing: 0.1em;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .hero-foot:before {
+        content: "";
+        width: 50px;
+        height: 1px;
+        background: #a8ae98;
+      }
+      .note-section {
+        margin: 70px auto 60px;
+        display: grid;
+        grid-template-columns: 1fr 1.15fr;
+        gap: 10%;
+        max-width: 1150px;
+        position: relative;
+      }
+      .section-title {
+        font-family: "STKaiti", "KaiTi", serif;
+        font-size: 34px;
+        font-weight: 400;
+        color: var(--ink);
+        margin: 0 0 20px;
+        letter-spacing: 0.05em;
+      }
+      .about-copy {
+        font-size: 15px;
+        max-width: 445px;
+        margin: 0;
+        line-height: 2.1;
+      }
+      .official {
+        display: inline-block;
+        margin-top: 22px;
+        font-size: 13px;
+        border-bottom: 1px solid #a7af98;
+        color: var(--ink);
+        padding-bottom: 3px;
+      }
+      .official:hover {
+        color: var(--orange);
+      }
+      .direction-note {
+        background: #eeeedc;
+        padding: 29px 38px 30px;
+        transform: rotate(2deg);
+        box-shadow: 1px 8px 16px #5755370b;
+        position: relative;
+      }
+      .direction-note:before {
+        content: "";
+        position: absolute;
+        top: -12px;
+        left: 40%;
+        width: 90px;
+        height: 24px;
+        background: #e0d9b2a3;
+        transform: rotate(-5deg);
+      }
+      .direction-note h3 {
+        font-family: "STKaiti", "KaiTi", serif;
+        font-weight: 400;
+        font-size: 22px;
+        margin: 0 0 14px;
+        color: var(--ink);
+      }
+      .direction-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 9px 26px;
+        font-size: 14px;
+      }
+      .direction-list span {
+        border-bottom: 1px solid #d1d3bd;
+        padding: 3px 0;
+      }
+      .library {
+        padding: 80px 0 70px;
+        position: relative;
+        max-width: 1280px;
+        margin: auto;
+      }
+      .library-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        margin-bottom: 35px;
+      }
+      .library-head h2 {
+        margin-bottom: 0;
+      }
+      .library-head p {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0 3px 4px;
+      }
+      .books {
+        height: 310px;
+        position: relative;
+        max-width: 1050px;
+        margin: auto;
+      }
+      .book {
+        position: absolute;
+        width: 29%;
+        height: 250px;
+        top: 30px;
+        border: 0;
+        text-align: left;
+        padding: 28px 24px 24px 38px;
+        border-radius: 3px 10px 10px 3px;
+        box-shadow:
+          2px 3px 0 #ded9c7,
+          3px 5px 0 #f4f0df,
+          4px 7px 0 #d3cebb,
+          6px 14px 20px #3f493c18;
+        transform-origin: 45% 94%;
+        transition:
+          transform 0.65s cubic-bezier(0.22, 0.7, 0.2, 1),
+          top 0.65s,
+          box-shadow 0.5s;
+        overflow: visible;
+        color: #f9f6e9;
+      }
+      .book:before {
+        content: "";
+        position: absolute;
+        left: 13px;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        border-left: 1px solid #ffffff33;
+        border-right: 1px solid #00000015;
+      }
+      .book:after {
+        content: "";
+        position: absolute;
+        right: 22px;
+        top: -3px;
+        width: 20px;
+        height: 51px;
+        background: #e0ab69;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+        box-shadow: 2px 3px 5px #0002;
+      }
+      .book:nth-child(1) {
+        left: 0;
+        background: linear-gradient(100deg, #2b5143, #54735d);
+        transform: rotate(-8deg);
+        z-index: 1;
+      }
+      .book:nth-child(2) {
+        left: 24%;
+        top: 17px;
+        background: linear-gradient(100deg, #c87c4d, #dca875);
+        transform: rotate(-3deg);
+        height: 259px;
+        z-index: 2;
+        border-radius: 2px 4px 4px 2px;
+      }
+      .book:nth-child(3) {
+        left: 48%;
+        top: 24px;
+        background: linear-gradient(100deg, #b4b9a0, #d3d5bd);
+        transform: rotate(4deg);
+        color: #35503d;
+        z-index: 3;
+        height: 249px;
+      }
+      .book:nth-child(4) {
+        left: 71%;
+        top: 38px;
+        background: linear-gradient(100deg, #e6d6b5, #f0e4cb);
+        transform: rotate(10deg);
+        color: #69543c;
+        z-index: 4;
+        height: 239px;
+      }
+      .book-title {
+        font-family: "STKaiti", "KaiTi", serif;
+        display: block;
+        font-size: 29px;
+        letter-spacing: 0.09em;
+        line-height: 1.3;
+        margin-bottom: 12px;
+        position: relative;
+      }
+      .book-sub {
+        font-size: 12px;
+        opacity: 0.8;
+        display: block;
+        max-width: 165px;
+        line-height: 1.8;
+      }
+      .book-sign {
+        position: absolute;
+        bottom: 26px;
+        left: 38px;
+        font-family: "STKaiti", "KaiTi", serif;
+        font-size: 17px;
+        opacity: 0.7;
+      }
+      .book-corner {
+        position: absolute;
+        right: 24px;
+        bottom: 22px;
+        font-size: 20px;
+        font-weight: 300;
+      }
+      .books .book:hover,
+      .books .book[aria-expanded="true"] {
+        transform: rotate(0deg) translateY(-26px);
+        box-shadow:
+          2px 3px 0 #ded9c7,
+          3px 5px 0 #f4f0df,
+          4px 7px 0 #d3cebb,
+          5px 23px 28px #3f493c25;
+        z-index: 7;
+      }
+      .book[aria-expanded="true"] .book-corner {
+        transform: rotate(45deg);
+      }
+      .book-corner {
+        transition: transform 0.4s;
+      }
+      .reading {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition:
+          grid-template-rows 0.6s cubic-bezier(0.2, 0.7, 0.2, 1),
+          opacity 0.4s;
+        opacity: 0;
+      }
+      .reading.is-open {
+        grid-template-rows: 1fr;
+        opacity: 1;
+      }
+      .reading-inner {
+        overflow: hidden;
+      }
+      .page {
+        position: relative;
+        background: #fcfaf1;
+        margin: 35px 5px 15px;
+        padding: 42px 52px 44px;
+        box-shadow:
+          0 3px 0 #e6e2d3,
+          0 5px 0 #fdfbf2,
+          0 8px 25px #3847340b;
+        border-top: 1px solid #e2e2d3;
+        min-height: 230px;
+      }
+      .page:before {
+        content: "";
+        position: absolute;
+        left: 23px;
+        top: 25px;
+        bottom: 25px;
+        border-left: 1px solid #c5ac8c55;
+      }
+      .page-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+      .page h3 {
+        font-family: "STKaiti", "KaiTi", serif;
+        font-size: 29px;
+        font-weight: 400;
+        color: var(--ink);
+        margin: 0;
+      }
+      .close {
+        border: 0;
+        background: none;
+        padding: 4px 0 4px 12px;
+        font-size: 13px;
+        border-bottom: 1px solid #c5c9b5;
+      }
+      .page p {
+        font-size: 14px;
+        margin: 8px 0 18px;
+        max-width: 780px;
+      }
+      .page ul {
+        padding-left: 20px;
+        margin: 0;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px 45px;
+        font-size: 14px;
+      }
+      .page li::marker {
+        color: #a6ae91;
+      }
+      .page a {
+        border-bottom: 1px solid #9ba78a;
+      }
+      .page a:hover {
+        color: var(--orange);
+      }
+      .library-bottom {
+        margin-top: 35px;
+        display: flex;
+        justify-content: center;
+        font-family: "STKaiti", "KaiTi", serif;
+        color: #7f836f;
+        font-size: 16px;
+      }
+      .library-bottom:before,
+      .library-bottom:after {
+        content: "";
+        height: 1px;
+        width: 60px;
+        background: #c4c8b7;
+        align-self: center;
+        margin: 0 20px;
+      }
+      footer {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        border-top: 1px solid var(--line);
+        padding: 25px 0 30px;
+        font-size: 11px;
+        color: var(--muted);
+      }
+      footer a {
+        border-bottom: 1px solid #bcc0ad;
+      }
+      .reveal-in {
+        animation: enter 0.9s both;
+      }
+      @keyframes enter {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @media (min-width: 1700px) {
+        .frame {
+          padding: 0 100px;
+        }
+        .hero h1 {
+          font-size: 142px;
+        }
+      }
+      @media (max-width: 1000px) {
+        .frame {
+          padding: 0 5vw;
+        }
+        .hero {
+          min-height: 590px;
+          height: 66vw;
+        }
+        .hero-copy {
+          width: 54%;
+        }
+        .hero h1 {
+          font-size: 10vw;
+        }
+        .hero-art {
+          width: 115%;
+          left: -5%;
+          object-position: 55% center;
+        }
+        .affiliation {
+          font-size: 10px;
+          max-width: 280px;
+          line-height: 1.8;
+        }
+        .hero-description {
+          font-size: 13px;
+          max-width: 285px;
+        }
+        .book {
+          padding-left: 28px;
+        }
+        .book-title {
+          font-size: 24px;
+        }
+        .book-sub {
+          font-size: 11px;
+        }
+        .book-sign {
+          left: 28px;
+        }
+        .note-section {
+          gap: 6%;
+        }
+        .direction-note {
+          padding: 25px;
+        }
+        .books {
+          height: 290px;
+        }
+      }
+      @media (max-width: 650px) {
+        header {
+          height: 78px;
+        }
+        nav {
+          gap: 19px;
+          font-size: 11px;
+        }
+        .desk-mark {
+          font-size: 12px;
+          gap: 8px;
+        }
+        .mark {
+          height: 28px;
+          width: 24px;
+          font-size: 22px;
+        }
+        .hero {
+          height: auto;
+          min-height: 740px;
+          align-items: start;
+          padding-top: 34px;
+        }
+        .hero-copy {
+          width: 100%;
+          padding: 0;
+        }
+        .affiliation {
+          margin-bottom: 25px;
+          max-width: none;
+          font-size: 10px;
+        }
+        .hero h1 {
+          font-size: clamp(68px, 15vw, 99px);
+          margin-bottom: 22px;
+        }
+        .hero-description {
+          max-width: 280px;
+          margin-bottom: 24px;
+        }
+        .hero-art {
+          left: -15%;
+          width: 130%;
+          top: 260px;
+          height: 480px;
+          object-fit: cover;
+          object-position: 69% center;
+        }
+        .hero-foot {
+          bottom: 2px;
+          font-size: 10px;
+        }
+        .entry {
+          padding: 9px 17px;
+          gap: 28px;
+          font-size: 13px;
+        }
+        .note-section {
+          margin-top: 64px;
+          grid-template-columns: 1fr;
+          gap: 38px;
+        }
+        .section-title {
+          font-size: 29px;
+        }
+        .about-copy {
+          font-size: 14px;
+        }
+        .direction-note {
+          margin: 0 8px 0 20px;
+          padding: 27px 30px;
+        }
+        .library {
+          padding-top: 55px;
+        }
+        .library-head {
+          margin-bottom: 36px;
+          align-items: start;
+          gap: 15px;
+        }
+        .library-head p {
+          font-size: 11px;
+          max-width: 105px;
+          text-align: right;
+        }
+        .books {
+          height: 420px;
+          width: 100%;
+          max-width: 420px;
+        }
+        .book {
+          width: 48%;
+          height: 200px !important;
+          padding: 24px 20px 20px 29px;
+        }
+        .book:nth-child(1) {
+          left: 3%;
+          top: 10px;
+          transform: rotate(-8deg);
+        }
+        .book:nth-child(2) {
+          left: 47%;
+          top: 3px;
+          transform: rotate(5deg);
+        }
+        .book:nth-child(3) {
+          left: 5%;
+          top: 208px;
+          transform: rotate(-5deg);
+          z-index: 4;
+        }
+        .book:nth-child(4) {
+          left: 49%;
+          top: 211px;
+          transform: rotate(8deg);
+          z-index: 5;
+        }
+        .book-title {
+          font-size: 24px;
+        }
+        .book-sub {
+          font-size: 10px;
+        }
+        .book-sign {
+          font-size: 14px;
+          bottom: 20px;
+          left: 29px;
+        }
+        .book:after {
+          right: 16px;
+          width: 15px;
+          height: 35px;
+        }
+        .book:hover,
+        .book[aria-expanded="true"] {
+          transform: rotate(0) translateY(-12px);
+        }
+        .page {
+          margin-top: 30px;
+          padding: 28px 27px 32px;
+        }
+        .page:before {
+          left: 12px;
+        }
+        .page h3 {
+          font-size: 25px;
+        }
+        .page p,
+        .page ul {
+          font-size: 13px;
+        }
+        .page ul {
+          grid-template-columns: 1fr;
+          gap: 10px;
+        }
+        .library-bottom {
+          font-size: 14px;
+        }
+        .library-bottom:before,
+        .library-bottom:after {
+          width: 25px;
+          margin: 0 12px;
+        }
+        footer {
+          font-size: 10px;
+          align-items: start;
+        }
+        footer span {
+          max-width: 65%;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *:before,
+        *:after {
+          animation: none !important;
+          transition: none !important;
+        }
+        .hero-art {
+          transform: none !important;
+        }
+      }
+      .hero-art {
+        mask-image: linear-gradient(
+          to right,
+          transparent 0%,
+          #000 24%,
+          #000 96%,
+          transparent 100%
+        );
+        object-fit: contain;
+      }
+      .affiliation,
+      nav {
+        font-size: 15px;
+      }
+      .hero-description,
+      .about-copy {
+        font-size: 18px;
+      }
+      .hero-copy {
+        padding-left: 1vw;
+      }
+      .entry {
+        border-radius: 100px;
+      }
+      .book-sub,
+      .direction-list {
+        font-size: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#main">跳到正文</a>
+    <div class="frame">
+      <header>
+        <a class="desk-mark" href="#main" aria-label="回到首页"
+          ><span class="mark" aria-hidden="true">D</span>课题组的书桌</a
+        >
+        <nav aria-label="主导航">
+          <a href="#about">关于我们</a><a href="#research">研究方向</a
+          ><a href="#notebooks" data-open="guide">学生专栏</a>
+        </nav>
+      </header>
+      <main id="main">
+        <section class="hero" aria-labelledby="hero-title">
+          <img
+            class="hero-art"
+            src="studio.webp"
+            alt="优化研究主题插画：方格研究手稿、等高线曲面和候选点"
+            width="1536"
+            height="1024"
+          />
+          <div class="hero-copy reveal-in">
+            <p class="affiliation">华东理工大学 · 信息科学与工程学院</p>
+            <h1 id="hero-title">Du's Group</h1>
+            <p class="hero-description">
+              堵威老师与同学们的科研日常。<br />从智能优化出发，探索工业中的更优解。
+            </p>
+            <a class="entry" href="#notebooks" data-open="guide"
+              >翻开学生专栏 <span aria-hidden="true">↗</span></a
+            >
+          </div>
+        </section>
+        <section class="note-section" id="about" aria-labelledby="about-title">
+          <div>
+            <h2 class="section-title" id="about-title">在这里，一起琢磨</h2>
+            <p class="about-copy">
+              我们关注智能优化的理论、方法与应用，尝试理解复杂工业过程中的决策问题。研究之外，也把学习的路径、讨论的收获与踩过的坑，慢慢整理成可翻阅的笔记。
+            </p>
+            <a
+              class="official"
+              href="https://faculty.ecust.edu.cn/cise/dw/main.htm"
+              target="_blank"
+              rel="noopener noreferrer"
+              >导师介绍与研究成果 ↗</a
+            >
+          </div>
+          <aside class="direction-note" id="research">
+            <h3>案头正在想的问题</h3>
+            <div class="direction-list">
+              <span>进化计算</span><span>大规模优化</span><span>鲁棒优化</span
+              ><span>复杂工业过程决策优化</span>
+            </div>
+          </aside>
+        </section>
+        <section class="library" id="notebooks" aria-labelledby="library-title">
+          <div class="library-head">
+            <h2 class="section-title" id="library-title">桌上的几本笔记</h2>
+            <p>点一本，摊开来看看。</p>
+          </div>
+          <div class="books" aria-label="栏目笔记本">
+            <button
+              class="book"
+              id="book-guide"
+              aria-expanded="false"
+              aria-controls="panel-guide"
+              data-book="guide"
+            >
+              <span class="book-title">新生指南</span
+              ><span class="book-sub">入组准备与学习路径</span
+              ><span class="book-corner" aria-hidden="true">＋</span>
+            </button>
+            <button
+              class="book"
+              id="book-research"
+              aria-expanded="false"
+              aria-controls="panel-research"
+              data-book="research"
+            >
+              <span class="book-title">科研经验</span
+              ><span class="book-sub">阅读、实验与学术表达</span
+              ><span class="book-corner" aria-hidden="true">＋</span>
+            </button>
+            <button
+              class="book"
+              id="book-daily"
+              aria-expanded="false"
+              aria-controls="panel-daily"
+              data-book="daily"
+            >
+              <span class="book-title">学硕专栏</span
+              ><span class="book-sub">研究问题与方法训练</span
+              ><span class="book-corner" aria-hidden="true">＋</span>
+            </button>
+            <button
+              class="book"
+              id="book-links"
+              aria-expanded="false"
+              aria-controls="panel-links"
+              data-book="links"
+            >
+              <span class="book-title">专硕专栏</span
+              ><span class="book-sub">实际需求与工程实践</span
+              ><span class="book-corner" aria-hidden="true">＋</span>
+            </button>
+          </div>
+          <div
+            class="reading"
+            id="panel-guide"
+            role="region"
+            aria-labelledby="book-guide"
+            inert
+          >
+            <div class="reading-inner">
+              <article class="page">
+                <div class="page-top">
+                  <h3>新生指南</h3>
+                  <button class="close" data-close="guide">收起笔记 ×</button>
+                </div>
+                <p>
+                  先了解研究方向，再与导师讨论近期任务，把学习和交流的方式准备好。
+                </p>
+                <ul>
+                  <li>写下对研究方向的理解，以及最想弄清楚的问题。</li>
+                  <li>建立文献与笔记目录，记录来源、疑问和下一步。</li>
+                  <li>与导师讨论当前任务，将近期目标拆成可检查的小步。</li>
+                </ul>
+              </article>
+            </div>
+          </div>
+          <div
+            class="reading"
+            id="panel-research"
+            role="region"
+            aria-labelledby="book-research"
+            inert
+          >
+            <div class="reading-inner">
+              <article class="page">
+                <div class="page-top">
+                  <h3>科研经验</h3>
+                  <button class="close" data-close="research">
+                    收起笔记 ×
+                  </button>
+                </div>
+                <p>把阅读、实验与表达的过程留下来，让经验可以回查和积累。</p>
+                <ul>
+                  <li>带着问题阅读文献，区分结论、证据与自己的判断。</li>
+                  <li>记录数据、参数和运行环境，让实验结果可以回查。</li>
+                  <li>汇报时先说明问题，再用关键证据说明进展与困难。</li>
+                </ul>
+              </article>
+            </div>
+          </div>
+          <div
+            class="reading"
+            id="panel-daily"
+            role="region"
+            aria-labelledby="book-daily"
+            inert
+          >
+            <div class="reading-inner">
+              <article class="page">
+                <div class="page-top">
+                  <h3>学硕专栏</h3>
+                  <button class="close" data-close="daily">收起笔记 ×</button>
+                </div>
+                <p>
+                  围绕清楚的研究问题组织阅读、方法与实验，形成有证据支撑的论证。
+                </p>
+                <ul>
+                  <li>梳理已有工作，明确当前问题与已有方法的差别。</li>
+                  <li>定义比较基线、评价指标与实验条件，再检验方法。</li>
+                  <li>整理结论成立的条件、局限及值得继续追问的方向。</li>
+                </ul>
+              </article>
+            </div>
+          </div>
+          <div
+            class="reading"
+            id="panel-links"
+            role="region"
+            aria-labelledby="book-links"
+            inert
+          >
+            <div class="reading-inner">
+              <article class="page">
+                <div class="page-top">
+                  <h3>专硕专栏</h3>
+                  <button class="close" data-close="links">收起笔记 ×</button>
+                </div>
+                <p>从具体需求和约束出发，让研究过程与工程验证彼此连接。</p>
+                <ul>
+                  <li>了解任务目标、业务约束和数据条件，明确需要解决什么。</li>
+                  <li>建立可运行的基础方案，在真实约束下评估改进。</li>
+                  <li>整理实现、验证结果与使用说明，为后续交接保留依据。</li>
+                </ul>
+              </article>
+            </div>
+          </div>
+        </section>
+      </main>
+      <footer>
+        <span>堵威课题组 · 设计评审稿，内容以官方公开信息为准</span
+        ><a href="#main">回到书桌 ↑</a>
+      </footer>
+    </div>
+    <script>
+      (() => {
+        const buttons = [...document.querySelectorAll("[data-book]")];
+        const panels = [...document.querySelectorAll(".reading")];
+        let current = null;
+        function openBook(key, returnFocus = false) {
+          const previous = current;
+          current = key;
+          buttons.forEach((button) =>
+            button.setAttribute(
+              "aria-expanded",
+              String(button.dataset.book === key),
+            ),
+          );
+          panels.forEach((panel) => {
+            const active = panel.id === "panel-" + key;
+            panel.classList.toggle("is-open", active);
+            panel.inert = !active;
+          });
+          if (returnFocus && previous)
+            document
+              .getElementById("book-" + previous)
+              .focus({ preventScroll: true });
+        }
+        buttons.forEach((button) =>
+          button.addEventListener("click", () =>
+            openBook(
+              current === button.dataset.book ? null : button.dataset.book,
+            ),
+          ),
+        );
+        document
+          .querySelectorAll("[data-close]")
+          .forEach((button) =>
+            button.addEventListener("click", () => openBook(null, true)),
+          );
+        document
+          .querySelectorAll("[data-open]")
+          .forEach((link) =>
+            link.addEventListener("click", () => openBook(link.dataset.open)),
+          );
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && current) openBook(null, true);
+        });
+        const motion = matchMedia("(prefers-reduced-motion: reduce)");
+        const hero = document.querySelector(".hero");
+        hero.addEventListener("pointermove", (event) => {
+          if (motion.matches || event.pointerType === "touch") return;
+          const rect = hero.getBoundingClientRect();
+          hero.style.setProperty(
+            "--px",
+            ((event.clientX - rect.left) / rect.width - 0.5) * 10 + "px",
+          );
+          hero.style.setProperty(
+            "--py",
+            ((event.clientY - rect.top) / rect.height - 0.5) * 7 + "px",
+          );
+        });
+        hero.addEventListener("pointerleave", () => {
+          hero.style.setProperty("--px", "0px");
+          hero.style.setProperty("--py", "0px");
+        });
+      })();
+    </script>
+  </body>
+</html>
