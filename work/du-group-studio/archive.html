@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#f7f4e9" />
+    <title>组内档案 · Du's Group</title>
+    <link rel="stylesheet" href="archive.css" />
+    <script defer src="archive-adapter.js"></script>
+    <script defer src="archive.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#archive">跳到档案</a>
+    <header>
+      <a class="brand" href="index.html"
+        >DU'S GROUP <span>／课题组的书桌</span></a
+      ><a href="index.html">回到书桌 ↗</a>
+    </header>
+    <main id="archive">
+      <section class="intro">
+        <h1>组内档案</h1>
+        <p>按日期找组会汇报，按分类查资料，按活动翻相册。</p>
+        <div class="folder">
+          <label class="pick" for="folder">选择本地档案文件夹 ↗</label
+          ><input id="folder" type="file" webkitdirectory multiple /><button
+            type="button"
+            class="refresh"
+            id="refresh"
+            hidden
+          >
+            刷新档案 ↻
+          </button>
+          <p id="library-status" role="status">尚未选择文件夹</p>
+        </div>
+        <p class="privacy" id="privacy">
+          文件只在当前页面中读取，不会上传或保存到浏览器。刷新或关闭后需重新选择；资料更新后，可再次选择同一文件夹。
+        </p>
+      </section>
+      <section class="shelf" aria-label="档案浏览">
+        <div class="tabs" role="group" aria-label="档案分类">
+          <button type="button" data-tab="meetings" aria-pressed="true">
+            组会汇报 <span id="count-meetings">0</span></button
+          ><button type="button" data-tab="resources" aria-pressed="false">
+            资料库 <span id="count-resources">0</span></button
+          ><button type="button" data-tab="albums" aria-pressed="false">
+            活动相册 <span id="count-albums">0</span>
+          </button>
+        </div>
+        <div class="filters">
+          <label
+            >搜索档案<input
+              type="search"
+              id="query"
+              placeholder="输入关键词" /></label
+          ><label
+            >年份<select id="year">
+              <option value="">全部年份</option>
+            </select></label
+          ><label>起始日期<input id="from" type="date" /></label
+          ><label>截止日期<input id="until" type="date" /></label
+          ><label id="category-label" hidden
+            >资源分类<select id="category">
+              <option value="">全部分类</option>
+            </select></label
+          ><button type="button" id="reset">清除筛选</button>
+        </div>
+        <p id="result-status" class="result-status" role="status"></p>
+        <div id="results"></div>
+        <aside id="empty" class="empty">
+          <h2>档案目录示例</h2>
+          <p>
+            材料按下列目录放置后，可刷新档案或重新选择根文件夹。目录名中的日期使用
+            YYYY-MM-DD。
+          </p>
+          <pre>
+组内档案/
+├─ 组会/2026-11-20 每周组会/
+│  └─ 张同学 - 论文分享/
+│     ├─ 论文.pdf
+│     └─ 分享.pptx
+├─ 资料/写作/写作指南.pdf
+└─ 相册/2026-11-20 秋日合影/合影.jpg</pre
+          >
+          <p>
+            文件名会作为标题显示。缺少论文或幻灯片的分享也会保留，并标明缺失项。
+          </p>
+        </aside>
+        <details id="issues" hidden>
+          <summary>目录读取提示</summary>
+          <ul id="issue-list"></ul>
+        </details>
+      </section>
+    </main>
+    <footer>Du's Group · 组内档案</footer>
+    <dialog id="photo-viewer" aria-label="照片预览">
+      <div class="photo-toolbar">
+        <button id="previous" type="button" aria-label="上一张照片">
+          ← 上一张
+        </button>
+        <p id="photo-caption"></p>
+        <button id="next" type="button" aria-label="下一张照片">下一张 →</button
+        ><button id="close-photo" type="button" aria-label="关闭照片预览">
+          关闭 ×
+        </button>
+      </div>
+      <img id="full-photo" alt="" />
+      <p class="photo-help">使用 ← → 切换照片，Esc 关闭</p>
+    </dialog>
+  </body>
+</html>

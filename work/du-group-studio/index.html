@@ -1110,7 +1110,7 @@
         >
         <nav aria-label="主导航">
           <a href="#about">关于我们</a><a href="#research">研究方向</a
-          ><a href="#notebooks" data-open="guide">学生专栏</a>
+          ><a href="#notebooks" data-open="guide">学生专栏</a><a href="archive.html">组内档案</a>
         </nav>
       </header>
       <main id="main">
@@ -1401,7 +1401,7 @@
           }
         });
         const nav = document.querySelector("nav");
-        const navLinks = [...nav.querySelectorAll("a")];
+        const navLinks = [...nav.querySelectorAll('a[href^="#"]')];
         const wash = document.createElement("span");
         wash.className = "nav-wash";
         wash.setAttribute("aria-hidden", "true");
