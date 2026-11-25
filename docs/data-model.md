@@ -4,7 +4,7 @@
 
 ## 共同约定
 
-所有业务记录有 `id`、`createdAt`、`updatedAt`。内容类 news、research-directions、research、members、guides、alumni-profiles 启用 Payload drafts，具有 `_status=draft|published`；可见性为 `public|internal`。只有已发布且当前用户有权读取的数据进入页面与搜索。公开内容发布时验证所有公开投影字段，不依赖“草稿也必填”。正文不同时维护 Markdown 和富文本两份来源。
+所有业务记录有 `id`、`createdAt`、`updatedAt`。内容类 news、research-directions、research、members、guides、meetings、resources、albums、alumni-profiles 启用 Payload drafts，具有 `_status=draft|published`；可见性为 `public|internal`。只有已发布且当前用户有权读取的数据进入页面与搜索。公开内容发布时验证所有公开投影字段，不依赖“草稿也必填”。正文不同时维护 Markdown 和富文本两份来源。组会、资料与相册导入默认 `draft + internal`，分享文件不等于授权公开。
 
 slug 在所属 collection 唯一、规范化为小写路径段，改名保留重定向映射在站点配置；锚点唯一性限定在文档内。枚举、外键、唯一约束在数据库/Schema 强制，角色和发布权限仍需服务端 access。业务删除默认先撤回发布；实际删除只由管理员执行，并阻止存在引用的记录被误删。
 
@@ -24,7 +24,12 @@ slug 在所属 collection 唯一、规范化为小写路径段，改名保留重
 | guide-categories | title、slug、stage→guide-stages、description、sortOrder | 阶段下单层分类，形成阶段→分类→指南；删分类前迁移指南 |
 | guide-tags | title、slug | 多标签词表，避免自由文本重复 |
 | guides | title、slug、summary、bodyMarkdown、category→guide-categories、tags→guide-tags[]、relatedGuides→guides[]、resourceLinks[{label,url}]、owner→users、visibility、publishedRevision、anchors[{key,heading}] | 相关推荐仅返回当前用户有权读取的指南；资源链接限 http/https，外链标识明确；Markdown 唯一正文；owner 负责维护而非额外授权；publishedRevision 为发布快照哈希/标识，发布时生成 |
-| media | filename、mimeType、filesize、storageKey、uploadedBy→users、parent(polymorphic relationship)?、alt | parent 只允许 news/research/members/guides/alumni-profiles；一个文件一个父记录；未挂载仅上传者/admin 可读；metadata 同样受控 |
+| meetings（guides） | title、slug、meetingDate、presentations[{id,presenter,paperTitle,notes?,attachments→media[]}]、visibility | 每周一次记录可有多位汇报人、多篇论文；每项汇报可含论文 PDF 与 PPT/PPTX，附件父记录均为该 meeting |
+| resource-categories（guides） | title、slug、parent→resource-categories? | 分类可有子类；禁止自引用与循环 |
+| resources（guides） | title、slug、category→resource-categories、attachments→media[]、visibility | 按分类归档 PDF 等资料；正文摘要可后续补充，不要求手工改页面 |
+| albums（portal） | title、slug、eventDate、photos→media[]、visibility | 按活动归档，允许同一活动持续补照片；照片支持 JPG/JPEG/PNG/WebP |
+| photo-consents（portal） | photo→media、subjectRef、grantedAt、withdrawnAt?、policyVersion、evidenceRef、actor→users | 公开照片前确认可识别被摄者的明确授权；证据私有，未确认不公开；撤回立即阻断该照片公开读取 |
+| media | filename、mimeType、filesize、storageKey、uploadedBy→users、parent(polymorphic relationship)?、alt | parent 只允许 news/research/members/guides/meetings/resources/albums/alumni-profiles；一个文件一个父记录；未挂载仅上传者/admin 可读；metadata 同样受控 |
 | cities | code、name、countryCode、regionName、centerLng、centerLat | code 唯一；人工维护城市字典；坐标为城市中心，绝非个人 GPS |
 | alumni-profiles | member→members、graduationYear、degree、destinationType(employment/further-study/other)、industry?、organization?、bioMarkdown?、city→cities?、visibility | member 唯一且须为 alumni；姓名、slug、头像复用成员，不复制身份；organization 支持单位筛选，industry 支持行业筛选；公开名录须本人明确同意，admin 可代建草稿但不能代授同意；由管理员依据本人提供的证据登记 |
 | directory-consents（portal，Phase 1） | member→members、grantedAt、withdrawnAt?、policyVersion、evidenceRef、actor→users | 独立于草稿版本；只允许一个有效授权。公开校友名录、个人页和头像均须实时核对 |
@@ -65,6 +70,12 @@ erDiagram
     MEMBERS o|--o{ MEDIA : owns_files
     GUIDES o|--o{ MEDIA : owns_files
     ALUMNI_PROFILES o|--o{ MEDIA : owns_files
+    MEETINGS o|--o{ MEDIA : owns_files
+    RESOURCES o|--o{ MEDIA : owns_files
+    ALBUMS o|--o{ MEDIA : owns_files
+    RESOURCE_CATEGORIES o|--o{ RESOURCE_CATEGORIES : contains
+    RESOURCE_CATEGORIES ||--o{ RESOURCES : categorizes
+    MEDIA ||--o{ PHOTO_CONSENTS : requires_for_public_photo
     GUIDES ||--o{ SOURCE_CHUNKS : future_indexes
     GUIDES ||--o{ INDEX_JOBS : future_schedules
     USERS {
@@ -203,7 +214,31 @@ erDiagram
     }
 ```
 
-media 的五条父关系是“至多选其中一条”，并非允许同时属于五个父记录；在 schema 校验及事务中强制。贡献者多对多由 Payload relationship 管理的关系表承载。审计 entityId 保留删除前记录标识，因此是有意不带级联外键的审计引用。
+media 的父关系是“至多选其中一条”，并非允许同时属于多个父记录；在 schema 校验及事务中强制。同一 PDF 用于不同记录时建立各自拥有的 media，不用多父引用放宽权限。贡献者多对多由 Payload relationship 管理的关系表承载。审计 entityId 保留删除前记录标识，因此是有意不带级联外键的审计引用。
+
+## 材料交接与增量导入
+
+用户只需提供以下目录中的材料，无需先填写 CMS 表单或修改 HTML；日期用实际活动日期，文件名可保留原名：
+
+```text
+组会/YYYY-MM-DD 主题/汇报人 - 论文简称/任意.pdf 或 任意.ppt 或 任意.pptx
+资料/<分类>(/<子类>...)/名称.pdf
+相册/YYYY-MM-DD 活动名/*.jpg/jpeg/png/webp
+```
+
+组会按日期与主题合并记录，汇报子目录形成多项汇报；本地适配结果的 `talks` 对应后续模型的 `presentations`。资料目录形成分类层级；相册按活动归档并增量追加。适配器输出 `meetings / resources / albums / issues`；不符合命名或类型要求的材料进入 issues，列明路径与原因，不静默遗漏或凭空补作者、日期、授权。
+
+本地使用时，把上述三个目录放在同一资料根目录。只读服务的启动方式（从仓库根目录执行，端口可选）：
+
+```powershell
+node work/du-group-studio/archive-server.cjs "work/private-archive" 4173
+```
+
+本机已预留 `work/private-archive/` 下的组会、资料、相册三个空目录。该目录已从 Git 排除；其他开发者可自行创建，或把命令中的路径换成自己的材料根目录。浏览器打开 `http://127.0.0.1:4173/`。服务通过 `GET /api/archive` 扫描指定磁盘目录并提供受控文件读取；新增或修改材料后刷新页面即可重读。材料保留在原目录，服务不上传、不改写源文件，也不代替备份。仅监听 `127.0.0.1`，这是本机预览，不可将端口暴露为外网共享站点。直接用 `file://` 打开页面时可备用手选资料目录，选择与预览仅在本次标签页有效，关闭后需重新选择。
+
+本地预览仅演示上述映射和浏览，不代表真实持久保存、账号权限或发布审核。后续 Payload 导入适配器复用同一语义，并保存稳定来源 ID、规范化相对路径与内容哈希到导入映射：重扫同一路径且同哈希不重复导入；同一父记录下相同哈希的重复文件列入 issues，由维护者决定保留；不同父记录独立归属。改名/移动通过已有 ID 或唯一哈希候选对账，歧义不自动合并。相同路径内容改变时创建待审修订与新的文件存储键，保留旧文件供历史版本引用；不能把原文件覆盖后声称历史可恢复。缺失源文件先报告，不自动删库。Payload 的原生文档版本用于编辑历史，文件保留与路径映射由导入流程负责，不再造一套正文版本系统。[Payload 版本](https://payloadcms.com/docs/versions/overview)
+
+相册公开前逐张检查授权，新增照片仍默认私有待审，不继承整本相册的公开许可；同意撤回优先于历史发布快照，图片原件、缩略图与下载入口均须复核。具体归属与私有存储约束见[模块设计](module-design.md#附件搜索及缓存)，实施阶段见[路线图](roadmap.md)。
 
 ## 校友位置与同意
 

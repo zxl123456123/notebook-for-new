@@ -1,6 +1,6 @@
 # 模块设计
 
-本文是待实现规格。2026-11-23 检查工作目录时未发现既有应用代码，不能据此声称已有任何能力。默认采用 Next.js、Payload、PostgreSQL 单体；四个业务模块为 `portal`、`guides`、`alumni`、`assistant`。
+本文是待实现的后端规格。2026-11-25 工作目录已有 `work/` 下的本地页面预览；预览不代表已部署 Payload、数据库、鉴权或持久文件服务。默认采用 Next.js、Payload、PostgreSQL 单体；四个业务模块为 `portal`、`guides`、`alumni`、`assistant`。
 
 ## 设计依据与取舍
 
@@ -14,12 +14,14 @@
 
 | 模块 | 职责与页面 | 所有数据 | 依赖 |
 |---|---|---|---|
-| portal | `/`、`/about`、`/news/[slug]`、`/research/[slug]`、`/directions/[slug]`、`/members`；团队介绍、新闻、成果与成员 | site-settings、news、research-directions、research、members、directory-consents | 共享基础能力 |
-| guides | `/guides`、`/guides/[slug]`、`/search`；入组指南、科研流程、附件、目录与搜索 | guide-stages、guide-categories、guide-tags、guides | 共享基础能力 |
+| portal | `/`、`/about`、`/news/[slug]`、`/research/[slug]`、`/directions/[slug]`、`/members`、`/albums/[slug]`；团队介绍、新闻、成果、成员与活动相册 | site-settings、news、research-directions、research、members、directory-consents、albums、photo-consents | 共享基础能力 |
+| guides | `/guides`、`/guides/[slug]`、`/search`、`/meetings/[slug]`、`/resources`；入组指南、科研流程、每周组会、分类资料与搜索 | guide-stages、guide-categories、guide-tags、guides、meetings、resource-categories、resources | 共享基础能力 |
 | alumni | `/alumni`；名单、城市聚合与 MapLibre 地图；管理员维护授权与撤回 | alumni-profiles、location-consents、cities | 共享基础能力、portal 成员只读接口 |
 | assistant | `/assistant`、`/api/assistant/query`；引用式问答，首期关闭 | 后续 source-chunks、index-jobs | guides 必须启用 |
 
 portal 与 guides 为核心模块，不允许停用；alumni 和 assistant 是分阶段可选模块。共享基础能力包含认证 users、media、服务端授权、公共布局、审计事件及模块开关；不是第五个可停用业务模块。业务模块不能直接写其他模块的表。门户展示指南入口只消费已授权摘要。校友扩展必须关联唯一成员，成员与登录账号关联可空，不将毕业等同于注销账号或授予内部权限。
+
+组会与科研资料沿用 guides 的内容维护权限，活动相册归 portal；不为三个目录另建插件系统。组会按周归档，多项汇报分别挂论文 PDF 与幻灯片；资料按分类浏览；活动相册允许持续补充。目录交接格式和 `meetings/resources/albums/issues` 适配器契约见[数据模型](data-model.md#材料交接与增量导入)。本地预览消费适配结果，后续 Payload 适配器通过模块服务写入草稿并报告导入问题；界面不直接依赖磁盘路径作为永久 ID。总体装配仍遵循[宿主架构](architecture.md#3-模块依赖与边界)。
 
 ## 注册、配置与启停
 
@@ -75,6 +77,8 @@ manifest 是规格示例，不是 Payload 内置 API。生产环境开关由受�
 ## 附件、搜索及缓存
 
 首期文件置应用挂载的私有持久卷，不放 public 目录；多实例或容量增长后迁移到私有对象存储，资源 ID 与权限语义保持不变。每个附件只归属一个内容记录，下载、缩略图和元数据访问都验证父记录当前发布态、可见性及模块状态。未归属的新上传仅上传者和管理员可读；发布前必须完成归属验证。公开页不能嵌内部附件。首期通过鉴权下载代理传文件，不使用撤回后仍有效的长时公开 URL。上传限制扩展名、实际 MIME 与大小；文件名不用于拼接存储路径。[Payload 上传机制](https://payloadcms.com/docs/upload/overview)
+
+每次材料导入默认为内部草稿；PDF/PPT/PPTX 不因出现在预览中而允许公开下载。相册照片须逐张记录被摄者公开同意，新增照片不继承已有相册授权，撤回后下一次读取即阻断原图与缩略图。公开投影去除照片定位等非必要元数据。私有持久卷随数据库及导入映射一起备份，涵盖仍被历史版本引用的文件；恢复演练验证稳定 ID、父记录关系、文件内容与授权状态，不能只备份数据库或把浏览器缓存视为存档。[数据与同意模型](data-model.md#材料交接与增量导入)
 
 搜索首期只覆盖指南标题和 Markdown 正文，分页返回经过同一 read 规则的结果；附件全文、草稿、版本、校友位置不参与。查询约束先于分页和计数，不能先拿前 N 条再过滤。结果摘要从授权正文生成；未命中只说没有可见结果，不透露内部命中数量。
 
