@@ -810,6 +810,295 @@
       .direction-list {
         font-size: 16px;
       }
+
+      /* A moving ink wash gives navigation a physical, persistent position. */
+      nav {
+        position: relative;
+        gap: 8px;
+        isolation: isolate;
+      }
+      nav a {
+        position: relative;
+        padding: 9px 17px;
+        border: 0;
+        border-radius: 30px;
+        transition:
+          color 0.25s,
+          transform 0.18s;
+      }
+      nav a:hover {
+        border: 0;
+      }
+      nav a[aria-current="location"] {
+        color: var(--ink);
+        font-weight: 600;
+      }
+      .nav-wash {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 0;
+        background: #e0e5d3;
+        border-radius: 30px;
+        z-index: -1;
+        transition:
+          transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+          width 0.35s,
+          opacity 0.25s;
+        opacity: 0;
+      }
+      nav a:active,
+      .entry:active {
+        transform: translateY(2px) scale(0.97);
+        box-shadow: none;
+      }
+      [id] {
+        scroll-margin-top: 32px;
+      }
+      .arrived {
+        animation: arrival 1.2s ease-out;
+      }
+      @keyframes arrival {
+        0%,
+        25% {
+          filter: drop-shadow(0 0 12px #c7b56b88);
+        }
+        100% {
+          filter: drop-shadow(0 0 0 transparent);
+        }
+      }
+      .books {
+        perspective: 1100px;
+      }
+      .book {
+        transition:
+          transform 0.65s cubic-bezier(0.22, 0.7, 0.2, 1),
+          filter 0.4s,
+          box-shadow 0.5s;
+      }
+      .books.has-open .book[aria-expanded="false"] {
+        filter: saturate(0.65);
+      }
+      .book[aria-expanded="true"] {
+        outline: 2px solid #b58d50;
+        outline-offset: 7px;
+      }
+      .book[aria-expanded="true"]:after {
+        height: 66px;
+      }
+      .book:active {
+        scale: 0.97;
+      }
+      .reading {
+        perspective: 1600px;
+      }
+      .page {
+        transform-origin: 0 50%;
+        transform: rotateY(-65deg);
+        opacity: 0;
+        transition:
+          transform 0.75s cubic-bezier(0.2, 0.7, 0.2, 1),
+          opacity 0.35s;
+        background: linear-gradient(
+          90deg,
+          #e5dfcb 0,
+          #fcfaf1 4%,
+          #fcfaf1 49.5%,
+          #eee8d8 50%,
+          #fcfaf1 51%
+        );
+        border-radius: 2px 9px 9px 2px;
+      }
+      .reading.is-open .page {
+        transform: rotateY(0);
+        opacity: 1;
+      }
+      .page:after {
+        content: "";
+        position: absolute;
+        inset: 8px 0 8px 50%;
+        width: 1px;
+        background: #bdb59b44;
+        pointer-events: none;
+      }
+      .page-top,
+      .page p,
+      .page ul {
+        position: relative;
+        z-index: 1;
+      }
+      .close {
+        border: 1px solid #c5c9b5;
+        border-radius: 30px;
+        padding: 6px 14px;
+        transition:
+          background 0.2s,
+          transform 0.2s;
+      }
+      .close:hover {
+        background: #e8ebdc;
+      }
+      .close:active {
+        transform: scale(0.96);
+      }
+      @media (max-width: 650px) {
+        nav {
+          gap: 1px;
+        }
+        nav a {
+          padding: 8px 9px;
+          font-size: 12px;
+        }
+        .page {
+          background: linear-gradient(90deg, #e5dfcb, #fcfaf1 7%);
+        }
+        .page:after {
+          display: none;
+        }
+      }
+
+      .official {
+        position: relative;
+        isolation: isolate;
+        padding: 5px 10px;
+        margin-left: -10px;
+        border-radius: 4px;
+        transition:
+          color 0.25s,
+          transform 0.2s;
+      }
+      .official:before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: #e1e6d3;
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.3s ease;
+        z-index: -1;
+        border-radius: inherit;
+      }
+      .official:hover:before,
+      .official:focus-visible:before {
+        transform: scaleX(1);
+      }
+      .official:hover {
+        transform: translateX(4px);
+        color: var(--ink);
+      }
+      .official:active {
+        transform: translateX(4px) scale(0.97);
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        height: 76px;
+        z-index: 12;
+        background: var(--paper);
+      }
+      html {
+        scroll-padding-top: 82px;
+      }
+      .topics details {
+        border-bottom: 1px solid #bdc3a9;
+      }
+      .topics summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 9px 8px;
+        cursor: pointer;
+        color: var(--ink);
+        border-radius: 4px;
+        transition:
+          background 0.2s,
+          padding 0.2s;
+      }
+      .topics summary::-webkit-details-marker {
+        display: none;
+      }
+      .topics summary::after {
+        content: "+";
+        font:
+          24px Georgia,
+          serif;
+        color: #875033;
+        transition: transform 0.25s;
+      }
+      .topics summary:is(:hover, :focus-visible),
+      .topics [open] summary {
+        background: #dce2c9;
+        padding-inline: 13px;
+      }
+      .topics [open] summary::after {
+        transform: rotate(45deg);
+      }
+      .topics details p {
+        margin: 0;
+        padding: 9px 13px 14px;
+        font-size: 16px;
+      }
+      .topics [open] p {
+        animation: noteIn 0.28s ease-out;
+      }
+      @keyframes noteIn {
+        from {
+          opacity: 0;
+          transform: translateY(-5px);
+        }
+      }
+      .entry {
+        transition:
+          transform 0.2s,
+          background 0.25s,
+          box-shadow 0.25s;
+      }
+      .entry:is(:hover, :focus-visible) {
+        background: #35664d;
+        box-shadow: 4px 5px 0 #cab892;
+      }
+      .entry span {
+        display: inline-block;
+        transition: transform 0.22s;
+      }
+      .entry:is(:hover, :focus-visible) span {
+        transform: translate(3px, -3px);
+      }
+      .entry:active {
+        background: #a15333;
+        box-shadow: 0 1px 0 #cab892;
+      }
+      .desk-mark:is(:hover, :focus-visible) .mark {
+        transform: rotate(7deg) translateY(-2px);
+        background: #dae0c9;
+      }
+      .mark {
+        transition:
+          transform 0.25s,
+          background 0.25s;
+      }
+      footer a {
+        padding: 6px 14px;
+        border-radius: 18px;
+        transition: background 0.2s;
+      }
+      footer a:is(:hover, :focus-visible) {
+        background: #dce2c9;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+        *,
+        *:before,
+        *:after {
+          animation: none !important;
+          transition: none !important;
+        }
+        .hero-art {
+          transform: none !important;
+        }
+      }
     </style>
   </head>
   <body>
@@ -859,10 +1148,28 @@
             >
           </div>
           <aside class="direction-note" id="research">
-            <h3>案头正在想的问题</h3>
-            <div class="direction-list">
-              <span>进化计算</span><span>大规模优化</span><span>鲁棒优化</span
-              ><span>复杂工业过程决策优化</span>
+            <h3>研究方向</h3>
+            <div class="topics">
+              <details name="research-notes">
+                <summary>进化计算</summary>
+                <p>从一组候选方案开始，经过选择和变异，逐代寻找更好的解。</p>
+              </details>
+              <details name="research-notes">
+                <summary>大规模优化</summary>
+                <p>
+                  当需要同时决定的变量越来越多，怎样在有限计算时间内找到可行方案？
+                </p>
+              </details>
+              <details name="research-notes">
+                <summary>鲁棒优化</summary>
+                <p>当条件偏离预期时，考察哪些方案依然可靠。</p>
+              </details>
+              <details name="research-notes">
+                <summary>复杂工业过程决策优化</summary>
+                <p>
+                  把工业过程中的目标、约束和不确定性写进模型，比较不同决策的效果。
+                </p>
+              </details>
             </div>
           </aside>
         </section>
@@ -1023,9 +1330,26 @@
         const buttons = [...document.querySelectorAll("[data-book]")];
         const panels = [...document.querySelectorAll(".reading")];
         let current = null;
-        function openBook(key, returnFocus = false) {
+        let revealTimer;
+        let navigationTimer;
+        const books = document.querySelector(".books");
+        const reduced = () =>
+          matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const moveTo = (element) =>
+          element.scrollIntoView({
+            behavior: reduced() ? "instant" : "smooth",
+            block: "start",
+          });
+        function cue(element) {
+          element.classList.remove("arrived");
+          void element.offsetWidth;
+          element.classList.add("arrived");
+        }
+        function openBook(key, returnFocus = false, reveal = true) {
+          clearTimeout(revealTimer);
           const previous = current;
           current = key;
+          books.classList.toggle("has-open", Boolean(key));
           buttons.forEach((button) =>
             button.setAttribute(
               "aria-expanded",
@@ -1037,31 +1361,170 @@
             panel.classList.toggle("is-open", active);
             panel.inert = !active;
           });
-          if (returnFocus && previous)
-            document
-              .getElementById("book-" + previous)
-              .focus({ preventScroll: true });
+          if (key && reveal)
+            revealTimer = setTimeout(
+              () => {
+                const page = document.querySelector("#panel-" + key + " .page");
+                const heading = page.querySelector("h3");
+                heading.tabIndex = -1;
+                moveTo(page);
+                heading.focus({ preventScroll: true });
+                cue(page);
+              },
+              reduced() ? 0 : 650,
+            );
+          if (returnFocus && previous) {
+            const book = document.getElementById("book-" + previous);
+            book.focus({ preventScroll: true });
+            book.scrollIntoView({
+              behavior: reduced() ? "instant" : "smooth",
+              block: "center",
+            });
+          }
         }
         buttons.forEach((button) =>
-          button.addEventListener("click", () =>
-            openBook(
-              current === button.dataset.book ? null : button.dataset.book,
-            ),
-          ),
+          button.addEventListener("click", () => {
+            const key =
+              current === button.dataset.book ? null : button.dataset.book;
+            openBook(key, !key);
+          }),
         );
         document
           .querySelectorAll("[data-close]")
           .forEach((button) =>
             button.addEventListener("click", () => openBook(null, true)),
           );
-        document
-          .querySelectorAll("[data-open]")
-          .forEach((link) =>
-            link.addEventListener("click", () => openBook(link.dataset.open)),
-          );
         document.addEventListener("keydown", (event) => {
-          if (event.key === "Escape" && current) openBook(null, true);
+          if (event.key === "Escape" && current) {
+            event.preventDefault();
+            openBook(null, true);
+          }
         });
+        const nav = document.querySelector("nav");
+        const navLinks = [...nav.querySelectorAll("a")];
+        const wash = document.createElement("span");
+        wash.className = "nav-wash";
+        wash.setAttribute("aria-hidden", "true");
+        nav.prepend(wash);
+        let selected = null;
+        function paint(link) {
+          wash.style.opacity = link ? "1" : "0";
+          if (!link) return;
+          wash.style.width = link.offsetWidth + "px";
+          wash.style.transform = "translateX(" + link.offsetLeft + "px)";
+        }
+        function select(link) {
+          selected = link;
+          navLinks.forEach((item) =>
+            item === link
+              ? item.setAttribute("aria-current", "location")
+              : item.removeAttribute("aria-current"),
+          );
+          paint(link);
+        }
+        navLinks.forEach((link) => {
+          link.addEventListener("pointerenter", () => paint(link));
+          link.addEventListener("focus", () => paint(link));
+        });
+        nav.addEventListener("pointerleave", () => paint(selected));
+        nav.addEventListener("focusout", () => paint(selected));
+        let navigationTarget = null;
+        function navigate(hash, openKey) {
+          clearTimeout(navigationTimer);
+          clearTimeout(revealTimer);
+          const target = document.getElementById(hash.slice(1));
+          if (!target) return;
+          navigationTarget = hash;
+          select(navLinks.find((link) => link.hash === hash) || null);
+          if (openKey) {
+            moveTo(books);
+            openBook(openKey);
+          } else {
+            moveTo(target);
+            cue(target);
+            if (!target.hasAttribute("tabindex")) target.tabIndex = -1;
+            target.focus({ preventScroll: true });
+          }
+          navigationTimer = setTimeout(
+            () => {
+              navigationTarget = null;
+            },
+            reduced() ? 0 : 1400,
+          );
+        }
+        document.querySelectorAll('a[href^="#"]').forEach((link) =>
+          link.addEventListener("click", (event) => {
+            if (
+              event.ctrlKey ||
+              event.metaKey ||
+              event.shiftKey ||
+              event.altKey
+            )
+              return;
+            if (!document.getElementById(link.hash.slice(1))) return;
+            event.preventDefault();
+            if (location.hash !== link.hash)
+              history.pushState(null, "", link.hash);
+            navigate(link.hash, link.dataset.open);
+          }),
+        );
+        function fromHash() {
+          const hash = location.hash;
+          const key = hash.startsWith("#panel-")
+            ? hash.slice(7)
+            : hash.startsWith("#book-")
+              ? hash.slice(6)
+              : hash === "#notebooks"
+                ? "guide"
+                : null;
+          const validKey =
+            key && buttons.some((button) => button.dataset.book === key);
+          if (!validKey && current) openBook(null, false, false);
+          navigate(hash || "#main", validKey ? key : null);
+        }
+        // hashchange also covers Back/Forward between these fragment entries.
+        addEventListener("hashchange", fromHash);
+        let scrollQueued = false;
+        function updateNav() {
+          scrollQueued = false;
+          if (navigationTarget) return;
+          const aboutRect = document
+            .getElementById("about")
+            .getBoundingClientRect();
+          const libraryRect = document
+            .getElementById("notebooks")
+            .getBoundingClientRect();
+          if (
+            selected?.hash === "#research" &&
+            aboutRect.bottom > 80 &&
+            libraryRect.top > innerHeight * 0.5
+          )
+            return;
+          const line = Math.min(innerHeight * 0.32, 240);
+          const nearest = navLinks.reduce((best, link) => {
+            const rect = document
+              .querySelector(link.hash)
+              .getBoundingClientRect();
+            const distance = Math.abs(rect.top - line);
+            return !best || distance < best.distance - 24
+              ? { link, distance }
+              : best;
+          }, null);
+          select(scrollY < 160 ? null : nearest.link);
+        }
+        addEventListener(
+          "scroll",
+          () => {
+            if (!scrollQueued) {
+              scrollQueued = true;
+              requestAnimationFrame(updateNav);
+            }
+          },
+          { passive: true },
+        );
+        addEventListener("resize", updateNav);
+        if (location.hash) fromHash();
+        updateNav();
         const motion = matchMedia("(prefers-reduced-motion: reduce)");
         const hero = document.querySelector(".hero");
         hero.addEventListener("pointermove", (event) => {
