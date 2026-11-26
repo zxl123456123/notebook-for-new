@@ -62,19 +62,29 @@
     ],
     resources: [
       {
-        title: "论文阅读笔记",
-        category: "论文阅读",
-        asset: demoAsset("论文阅读笔记 PDF"),
+        title: "论文修改检查表",
+        category: "写作经验",
+        asset: demoAsset("论文修改检查表.pdf"),
       },
       {
-        title: "文献整理方法",
-        category: "论文阅读",
-        asset: demoAsset("文献整理方法 PDF"),
+        title: "论文排版模板",
+        category: "论文模板",
+        asset: demoAsset("论文排版模板.dotx"),
       },
       {
-        title: "学术写作提纲",
-        category: "学术写作",
-        asset: demoAsset("学术写作提纲 PDF"),
+        title: "算法学习笔记",
+        category: "算法教学",
+        asset: demoAsset("算法学习笔记.pdf"),
+      },
+      {
+        title: "学术讲座记录",
+        category: "讲座分享",
+        asset: demoAsset("学术讲座记录.pdf"),
+      },
+      {
+        title: "arXiv 论文检索",
+        category: "常用网站",
+        href: "https://arxiv.org/",
       },
     ],
     albums: [
@@ -144,17 +154,6 @@
     }
     return link;
   }
-  function assetRows(container, label, assets) {
-    if (!assets.length) {
-      container.append(node("p", "暂缺" + label, "missing"));
-      return;
-    }
-    assets.forEach((asset) => {
-      const row = node("div", undefined, "asset-row");
-      row.append(node("strong", label), assetLink(asset));
-      container.append(row);
-    });
-  }
   function showPhoto(index) {
     photoIndex = (index + photos.length) % photos.length;
     const asset = photos[photoIndex];
@@ -192,6 +191,8 @@
     const text = [
       item.title,
       item.category,
+      item.asset?.name,
+      item.href,
       ...(item.photos || []).map((photo) => photo.name),
       ...(item.talks || []).flatMap((talk) => [
         talk.presenter,
@@ -213,206 +214,132 @@
       (!$("until").value || date <= $("until").value)
     );
   }
-  let selectedMeeting = "";
-  let selectedTalk = 0;
+  const meetingState = { real: new Map(), demo: new Map() };
   function renderMeetings(items, results) {
-    if (!items.length) return;
-    const key = (item) => item.id || item.date + "|" + item.title;
-    const query = $("query").value.trim().toLocaleLowerCase();
-    if (query) {
-      items = items.map((item) => {
-        if (item.title.toLocaleLowerCase().includes(query)) return item;
-        return {
-          ...item,
-          talks: item.talks.filter((talk) =>
-            [
-              talk.title,
-              talk.presenter,
-              ...talk.papers.map((p) => p.name),
-              ...talk.slides.map((p) => p.name),
-            ].some((text) => text.toLocaleLowerCase().includes(query)),
-          ),
-        };
-      });
-    }
-    let meeting =
-      items.find((item) => key(item) === selectedMeeting) || items[0];
-    selectedMeeting = key(meeting);
-    selectedTalk = Math.min(
-      selectedTalk,
-      Math.max(0, meeting.talks.length - 1),
+    const state = demo ? meetingState.demo : meetingState.real;
+    const filtered = ["query", "year", "from", "until"].some(
+      (id) => $(id).value,
     );
-    const layout = node("div", undefined, "screening-room");
-    const timeline = node("nav", undefined, "meeting-timeline");
-    timeline.setAttribute("aria-label", "按日期选择组会");
-    items.forEach((item) => {
-      const button = node("button", undefined, "meeting-choice");
-      button.type = "button";
-      button.setAttribute("aria-pressed", String(item === meeting));
-      const date = node("time", item.date.replaceAll("-", "."));
-      date.dateTime = item.date;
-      button.append(date, node("span", item.title));
-      button.addEventListener("click", () => {
-        selectedMeeting = key(item);
-        selectedTalk = 0;
-        render();
-      });
-      timeline.append(button);
-    });
-    const stage = node("section", undefined, "paper-stage");
-    stage.id = "paper-stage";
-    stage.tabIndex = 0;
-    stage.setAttribute("aria-label", "论文放映室，左右方向键切换汇报");
-    const toolbar = node("div", undefined, "stage-toolbar");
-    toolbar.append(
-      node("span", "组会", "stage-label"),
-      node("time", meeting.date.replaceAll("-", "."), "stage-date"),
-    );
-    const presenters = node("div", undefined, "presenter-tabs");
-    presenters.setAttribute("aria-label", "选择汇报人");
-    const frame = node("div", undefined, "paper-frame");
-    frame.id = "paper-frame";
-    frame.setAttribute("aria-live", "polite");
-    const footer = node("div", undefined, "stage-footer");
-    const counter = node("span", undefined, "stage-counter");
-    const arrows = node("div", undefined, "stage-arrows");
-    const previous = node("button", "←", "stage-arrow");
-    const next = node("button", "→", "stage-arrow");
-    previous.type = next.type = "button";
-    previous.id = "paper-previous";
-    next.id = "paper-next";
-    previous.setAttribute("aria-label", "上一项汇报");
-    next.setAttribute("aria-label", "下一项汇报");
-    function paint() {
-      frame.replaceChildren();
-      const talk = meeting.talks[selectedTalk];
-      counter.textContent = meeting.talks.length
-        ? String(selectedTalk + 1).padStart(2, "0") +
-          " / " +
-          String(meeting.talks.length).padStart(2, "0")
-        : "尚无分享资料";
-      previous.disabled = next.disabled = meeting.talks.length < 2;
-      [...presenters.children].forEach((button, index) =>
-        button.setAttribute("aria-pressed", String(index === selectedTalk)),
-      );
-      if (!talk) return;
-      const poster = node("div", undefined, "paper-poster");
-      frame.dataset.variant = String(selectedTalk % 2);
-      const coverUrl = talk.cover && url(talk.cover);
-      if (coverUrl) {
-        const image = node("img", undefined, "paper-cover");
-        image.src = coverUrl;
-        image.alt = talk.title + " · 论文图示";
-        image.addEventListener(
-          "error",
-          () => {
-            image.parentElement?.remove();
-            poster.classList.add("abstract-poster");
-          },
-          { once: true },
+    let month = "";
+    let folderList;
+    items.forEach((item, index) => {
+      const nextMonth = item.date.slice(0, 7);
+      if (month !== nextMonth) {
+        month = nextMonth;
+        const group = node("section", undefined, "chronology");
+        const label = node("h2", undefined, "month-stamp");
+        label.append(
+          node("small", item.date.slice(0, 4)),
+          node("strong", item.date.slice(5, 7)),
+          node("span", "月"),
         );
-        const zoom = node("button", undefined, "diagram-zoom");
-        zoom.type = "button";
-        zoom.title = "放大论文原图";
-        zoom.setAttribute("aria-label", talk.title + "，放大图示");
-        zoom.append(image, node("span", "⤢", "zoom-glyph"));
-        zoom.addEventListener("click", () => {
-          const dialog = $("diagram-dialog");
-          const enlarged = dialog.querySelector("img");
-          enlarged.src = coverUrl;
-          enlarged.alt = image.alt;
-          dialog.showModal();
-        });
-        poster.append(zoom);
-      } else poster.classList.add("abstract-poster");
-
-      const details = node("div", undefined, "paper-details");
-      details.append(
-        node("p", talk.presenter, "paper-presenter"),
-        node("h2", talk.title, "paper-title"),
-      );
-      const attachments = node("div", undefined, "paper-attachments");
-      talk.papers.forEach((asset, index) => {
-        const link = assetLink(asset);
-        link.classList.add("paper-read");
-        if (link.tagName === "A")
-          link.textContent =
-            (index ? "阅读论文 " + (index + 1) : "阅读论文") + " ↗";
-        attachments.append(link);
-      });
-      if (!talk.papers.length)
-        attachments.append(node("span", "论文待补充", "paper-missing"));
-      talk.slides.forEach((asset) => {
-        const link = assetLink(asset);
-        link.classList.add("paper-slides");
-        attachments.append(link);
-      });
-      if (!talk.slides.length)
-        attachments.append(node("span", "幻灯片待补充", "paper-missing"));
-      details.append(attachments);
-      frame.append(poster, details);
-    }
-    function move(delta) {
-      if (meeting.talks.length < 2) return;
-      selectedTalk =
-        (selectedTalk + delta + meeting.talks.length) % meeting.talks.length;
-      paint();
-    }
-    meeting.talks.forEach((talk, index) => {
-      const button = node("button", talk.presenter, "presenter-tab");
-      button.type = "button";
-      button.addEventListener("click", () => {
-        selectedTalk = index;
-        paint();
-      });
-      presenters.append(button);
-    });
-    previous.addEventListener("click", () => move(-1));
-    next.addEventListener("click", () => move(1));
-    stage.addEventListener("keydown", (event) => {
-      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-        event.preventDefault();
-        move(event.key === "ArrowRight" ? 1 : -1);
+        group.setAttribute("aria-label", month);
+        folderList = node("div", undefined, "month-folders");
+        group.append(label, folderList);
+        results.append(group);
       }
+      const key = item.id || item.date + "|" + item.title;
+      const folder = node("details", undefined, "meeting-folder");
+      folder.dataset.meeting = key;
+      folder.open = filtered || (state.has(key) ? state.get(key) : index === 0);
+      folder.addEventListener("toggle", () => {
+        if (folder.isConnected && !filtered) state.set(key, folder.open);
+      });
+      const summary = node("summary", undefined, "meeting-summary");
+      const date = node("time", item.date, "meeting-date");
+      date.dateTime = item.date;
+      summary.append(
+        node("span", undefined, "folder-icon"),
+        date,
+        node("span", item.title, "meeting-title"),
+        node(
+          "span",
+          item.talks.reduce(
+            (count, talk) => count + talk.papers.length + talk.slides.length,
+            0,
+          ) + " 份文件",
+          "meeting-count",
+        ),
+      );
+      const talks = node("div", undefined, "meeting-talks");
+      const needle = $("query").value.trim().toLocaleLowerCase();
+      const visibleTalks =
+        !needle || item.title.toLocaleLowerCase().includes(needle)
+          ? item.talks
+          : item.talks.filter((talk) =>
+              [
+                talk.presenter,
+                talk.title,
+                ...talk.papers.map((a) => a.name),
+                ...talk.slides.map((a) => a.name),
+              ]
+                .join(" ")
+                .toLocaleLowerCase()
+                .includes(needle),
+            );
+      visibleTalks.forEach((talk) => {
+        const section = node("section", undefined, "talk");
+        if (talk.presenter)
+          section.append(node("p", talk.presenter, "presenter"));
+        if (talk.presenter) section.append(node("h3", talk.title));
+        else section.classList.add("loose-files");
+        const attachments = node("div", undefined, "talk-assets");
+        [
+          [talk.papers, "阅读论文"],
+          [talk.slides, "下载 PPT"],
+        ].forEach(([assets, label]) => {
+          assets.forEach((asset, assetIndex) => {
+            const link = assetLink(asset);
+            link.textContent =
+              !talk.presenter || assets.length > 1
+                ? asset.name.replaceAll("_", " ")
+                : label + (assets.length > 1 ? " " + (assetIndex + 1) : "");
+            if (label === "下载 PPT" && link.tagName === "A") {
+              link.download = asset.name;
+              link.removeAttribute("target");
+            }
+            link.dataset.format =
+              asset.name.match(/\.([a-z0-9]+)$/i)?.[1]?.toUpperCase() ||
+              (label === "下载 PPT" ? "PPT" : "PDF");
+            link.title = asset.name;
+            link.setAttribute("aria-label", label + "：" + asset.name);
+            attachments.append(link);
+          });
+        });
+        if (!attachments.childElementCount)
+          attachments.append(node("span", "资料待补充", "missing"));
+        section.append(attachments);
+        talks.append(section);
+      });
+      folder.append(summary, talks);
+      folderList.append(folder);
     });
-    let touchStart;
-    frame.addEventListener(
-      "touchstart",
-      (event) => {
-        touchStart = event.touches.length === 1 ? event.touches[0] : null;
-      },
-      { passive: true },
-    );
-    frame.addEventListener(
-      "touchend",
-      (event) => {
-        const end = event.changedTouches[0];
-        if (!touchStart || !end) return;
-        const dx = end.clientX - touchStart.clientX;
-        if (
-          Math.abs(dx) > 60 &&
-          Math.abs(end.clientY - touchStart.clientY) < Math.abs(dx) / 2
-        )
-          move(dx < 0 ? 1 : -1);
-        touchStart = null;
-      },
-      { passive: true },
-    );
-    arrows.append(previous, next);
-    footer.append(counter, arrows);
-    toolbar.append(presenters, footer);
-    stage.append(toolbar, frame);
-    layout.append(stage);
-    if (items.length > 1) layout.append(timeline);
-    results.append(layout);
-    paint();
+  }
+  function resourceLink(item) {
+    if (item.asset) {
+      const link = assetLink(item.asset);
+      link.textContent = /\.pdf$/i.test(item.asset.name) ? "打开" : "下载";
+      link.title = item.asset.name;
+      return link;
+    }
+    try {
+      const target = new URL(item.href);
+      if (!/^https?:$/.test(target.protocol)) throw new Error();
+      const link = node("a", "打开 ↗");
+      link.href = target.href;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      return link;
+    } catch {
+      return node("span", "链接不可用", "missing");
+    }
   }
   function render() {
     const resources = active === "resources";
     $("collection-title").textContent = {
-      meetings: "组会放映室",
+      meetings: "组会文件夹",
       resources: "组内资料库",
-      albums: "活动影集",
+      albums: "活动相册",
     }[active];
     $("section-summary").textContent = sections[active].summary;
     $("query").placeholder = sections[active].placeholder;
@@ -429,33 +356,46 @@
     const results = $("results");
     results.className = active;
     results.replaceChildren();
-    const examples = {
-      meetings: [
-        "暂无组会记录",
-        "组会 / YYYY-MM-DD 主题 / 汇报人 - 论文简称 /",
-        "论文.pdf  ·  分享.pptx",
-        "每次组会按日期排列，论文与幻灯片随汇报人归在一起。",
-      ],
-      resources: [
-        "暂无组内资料",
-        "资料 / 分类 /",
-        "资料名称.pdf",
-        "沿用文件夹分类，选好目录后即可按书目检索。",
-      ],
-      albums: [
-        "暂无活动相册",
-        "相册 / YYYY-MM-DD 活动名 /",
-        "照片.jpg  ·  照片.png",
-        "一次活动一本相册，点开照片可连续翻阅。",
-      ],
-    };
     $("empty").hidden = !!catalog && catalog[active].length > 0;
-    const example = examples[active];
-    $("empty").replaceChildren(
-      node("h2", example[0]),
-      node("p", example[3]),
-      node("pre", example[1] + "\n└─ " + example[2]),
-    );
+    if (!$("empty").hidden) {
+      const sample = node("div", undefined, "sample-shelf");
+      const action = node(
+        "button",
+        "查看" +
+          { meetings: "组会", resources: "资料库", albums: "相册" }[active] +
+          "样例　↗",
+      );
+      action.type = "button";
+      action.addEventListener("click", () => $("preview-toggle").click());
+      sample.append(action);
+      if (active === "resources") {
+        const index = node("div", undefined, "topic-swatches");
+        demoCatalog.resources.forEach((item, i) => {
+          const tab = node("button", item.category);
+          tab.type = "button";
+          tab.setAttribute("aria-label", "查看" + item.category + "样例");
+          tab.style.setProperty("--slot", i);
+          tab.addEventListener("click", () => {
+            $("preview-toggle").click();
+            $("category").value = item.category;
+            render();
+            $("category").focus({ preventScroll: true });
+          });
+          index.append(tab);
+        });
+        sample.append(index);
+      } else if (active === "albums") {
+        const stack = node("span", undefined, "album-sample");
+        demoImages.slice(0, 3).forEach((src) => {
+          const img = node("img");
+          img.src = src;
+          img.alt = "";
+          stack.append(img);
+        });
+        action.prepend(stack);
+      }
+      $("empty").replaceChildren(sample);
+    }
     if (!catalog) {
       $("result-status").textContent = "";
       return;
@@ -508,18 +448,13 @@
       ),
     );
     if (!items.length && $("empty").hidden)
-      results.append(
-        node(
-          "p",
-          "没有符合条件的记录。可清除筛选，或检查所选文件夹中的目录。",
-          "empty",
-        ),
-      );
+      results.append(node("p", "没有匹配结果，试试清除筛选。", "empty"));
     if (active === "meetings") {
       renderMeetings(items, results);
       return;
     }
     let previousCategory = null;
+    let topicItems;
     if (resources)
       items.sort(
         (a, b) =>
@@ -528,14 +463,24 @@
       );
     items.forEach((item) => {
       if (resources && item.category !== previousCategory) {
-        results.append(
-          node("h2", item.category || "未分类", "category-heading"),
-        );
+        const group = node("section", undefined, "topic-group");
+        group.append(node("h2", item.category || "未分类", "category-heading"));
+        topicItems = node("div", undefined, "topic-items");
+        group.append(topicItems);
+        results.append(group);
         previousCategory = item.category;
       }
       const card = node("article", undefined, "record");
       if (resources) {
-        card.append(node("span", "PDF", "file-kind"), assetLink(item.asset));
+        card.classList.add("resource-row");
+        const extension = item.asset?.name
+          .match(/\.([^.]+)$/)?.[1]
+          ?.toUpperCase();
+        card.append(
+          node("span", item.asset ? extension || "文件" : "网站", "file-kind"),
+          node("span", item.title, "resource-title"),
+          resourceLink(item),
+        );
       } else {
         const date = node("time", undefined, "date");
         date.dateTime = item.date;
@@ -545,69 +490,51 @@
         );
         const content = node("div", undefined, "record-content");
         content.append(node("h2", item.title));
-        if (active === "meetings") {
-          content.append(
-            node("p", item.talks.length + " 项汇报", "record-meta"),
+        const available = item.photos.filter((photo) => url(photo));
+        content.append(
+          node(
+            "p",
+            item.photos.length + " 张照片 · 点击照片翻阅",
+            "record-meta",
+          ),
+        );
+        const grid = node("div", undefined, "gallery");
+        available.slice(0, 4).forEach((asset, index) => {
+          const button = node("button", undefined, "photo");
+          button.type = "button";
+          button.setAttribute(
+            "aria-label",
+            "查看 " +
+              asset.name +
+              "，第 " +
+              (index + 1) +
+              " 张，共 " +
+              available.length +
+              " 张",
           );
-          if (!item.talks.length)
-            content.append(node("p", "尚无分享资料", "missing"));
-          item.talks.forEach((talk) => {
-            const section = node("section", undefined, "talk");
-            section.append(
-              node("p", talk.presenter, "presenter"),
-              node("h3", talk.title),
-            );
-            assetRows(section, "论文", talk.papers);
-            assetRows(section, "幻灯片", talk.slides);
-            content.append(section);
-          });
-        } else {
-          const available = item.photos.filter((photo) => url(photo));
-          content.append(
+          const img = node("img");
+          img.src = url(asset);
+          img.alt = asset.name;
+          img.loading = "lazy";
+          button.append(
+            img,
             node(
-              "p",
-              item.photos.length + " 张照片 · 点击照片翻阅",
-              "record-meta",
+              "span",
+              index === 3 && available.length > 4
+                ? "查看全部 " + available.length + " 张 →"
+                : asset.name,
             ),
           );
-          const grid = node("div", undefined, "gallery");
-          available.slice(0, 4).forEach((asset, index) => {
-            const button = node("button", undefined, "photo");
-            button.type = "button";
-            button.setAttribute(
-              "aria-label",
-              "查看 " +
-                asset.name +
-                "，第 " +
-                (index + 1) +
-                " 张，共 " +
-                available.length +
-                " 张",
-            );
-            const img = node("img");
-            img.src = url(asset);
-            img.alt = asset.name;
-            img.loading = "lazy";
-            button.append(
-              img,
-              node(
-                "span",
-                index === 3 && available.length > 4
-                  ? "查看全部 " + available.length + " 张 →"
-                  : asset.name,
-              ),
-            );
-            button.addEventListener("click", () => {
-              photos = available;
-              showPhoto(index);
-            });
-            grid.append(button);
+          button.addEventListener("click", () => {
+            photos = available;
+            showPhoto(index);
           });
-          content.append(grid);
-        }
+          grid.append(button);
+        });
+        content.append(grid);
         card.append(date, content);
       }
-      results.append(card);
+      (resources ? topicItems : results).append(card);
     });
   }
 
@@ -754,24 +681,26 @@
     leaveDemo();
     loadServer(true);
   });
-  $("folder").addEventListener("change", (event) => {
+  $("folder").addEventListener("change", async (event) => {
     const files = [...event.target.files];
     event.target.value = "";
     if (!files.length) return;
-    ++loadVersion;
+    const version = ++loadVersion;
     leaveDemo();
     try {
       const entries = files.map((file) => ({
         path: file.webkitRelativePath.split("/").slice(1).join("/"),
         file,
       }));
-      const next = window.TeamArchive.buildCatalog(entries);
+      const next = await window.TeamArchive.prepareCatalog(entries);
+      if (version !== loadVersion) return;
       acceptCatalog(
         next,
         `已读取 ${files[0].webkitRelativePath.split("/")[0]} · ${files.length} 个文件`,
         false,
       );
     } catch (error) {
+      if (version !== loadVersion) return;
       $("library-status").textContent =
         "读取失败：" + error.message + "。请检查目录后重新选择。";
     }
@@ -779,6 +708,7 @@
   document.querySelectorAll("[data-tab]").forEach((button) =>
     button.addEventListener("click", () => {
       if (active !== button.dataset.tab) {
+        reset();
         active = button.dataset.tab;
         location.hash = active;
         render();
