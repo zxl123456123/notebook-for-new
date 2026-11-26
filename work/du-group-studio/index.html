@@ -1232,6 +1232,8 @@
       }
     @media (max-width:650px){.hero{overflow-x:clip;}}
     </style>
+    <link rel="stylesheet" href="ask-group.css" />
+    <script src="ask-group.js" defer></script>
   </head>
   <body>
     <a class="skip" href="#main">跳到正文</a>
@@ -1293,6 +1295,17 @@
               >翻开学生专栏 <span aria-hidden="true">↗</span></a
             >
           </div>
+          <button
+            class="ask-guide"
+            id="ask-open"
+            type="button"
+            aria-haspopup="dialog"
+            aria-controls="ask-panel"
+            aria-expanded="false"
+          >
+            <img src="ask-guide.webp" alt="" width="512" height="512" />
+            <span>问问组里 <span aria-hidden="true">↗</span></span>
+          </button>
         </section>
         <section class="note-section" id="about" aria-labelledby="about-title">
           <div>
@@ -1486,6 +1499,47 @@
         ><a href="#main">回到书桌 ↑</a>
       </footer>
     </div>
+    <dialog class="ask-panel" id="ask-panel" aria-labelledby="ask-title">
+      <div class="ask-heading">
+        <div class="ask-identity">
+          <img
+            class="ask-avatar"
+            src="ask-guide.webp"
+            alt=""
+            width="512"
+            height="512"
+          />
+          <h2 id="ask-title">问问组里</h2>
+        </div>
+        <button id="ask-close" type="button">
+          收起 <span aria-hidden="true">×</span>
+        </button>
+      </div>
+      <p class="ask-intro" id="ask-intro">想找哪次组会的材料？</p>
+      <div class="ask-suggestions" id="ask-suggestions" aria-label="试着问一句">
+        <button type="button">最近一次组会有哪些论文？</button>
+      </div>
+      <form id="ask-form">
+        <label class="ask-sr-only" for="ask-question">想找什么？</label>
+        <div class="ask-compose">
+          <input
+            id="ask-question"
+            name="question"
+            autocomplete="off"
+            maxlength="1000"
+            placeholder="日期、名字、论文，都可以问"
+            required
+          />
+          <button type="submit" id="ask-submit">问一问 ↗</button>
+        </div>
+      </form>
+      <p id="ask-status" class="ask-status" role="status" aria-live="polite"></p>
+      <section id="ask-result" class="ask-result" aria-label="回答" hidden>
+        <p id="ask-answer"></p>
+        <ul id="ask-citations" aria-label="原始文件"></ul>
+      </section>
+      <button type="button" id="ask-retry" hidden>再试一次 ↗</button>
+    </dialog>
     <script>
       (() => {
         const buttons = [...document.querySelectorAll("[data-book]")];

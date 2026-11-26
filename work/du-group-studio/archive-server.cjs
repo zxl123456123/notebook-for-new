@@ -6,6 +6,7 @@ const fsp = fs.promises;
 const path = require("node:path");
 const { pipeline } = require("node:stream");
 const { buildCatalog, prepareCatalog } = require("./archive-adapter.js");
+const { queryArchive } = require("./assistant-query.cjs");
 
 const staticFiles = new Map([
   ["/archive.html", "text/html; charset=utf-8"],
@@ -14,6 +15,9 @@ const staticFiles = new Map([
   ["/archive-adapter.js", "text/javascript; charset=utf-8"],
   ["/index.html", "text/html; charset=utf-8"],
   ["/studio.webp", "image/webp"],
+  ["/ask-group.js", "text/javascript; charset=utf-8"],
+  ["/ask-group.css", "text/css; charset=utf-8"],
+  ["/ask-guide.webp", "image/webp"],
 ]);
 // Serve only the bundled illustrations and sample photographs.
 for (const name of [
@@ -97,7 +101,7 @@ async function checkedPath(root, relative) {
   return current;
 }
 
-async function readCatalog(root) {
+async function readCatalog(root, categories = ["组会", "资料", "相册"]) {
   const entries = [],
     scanIssues = [];
   async function walk(relative) {
@@ -117,7 +121,7 @@ async function readCatalog(root) {
         scanIssues.push("无法读取或已跳过链接：" + relative);
     }
   }
-  for (const category of ["组会", "资料", "相册"]) await walk(category);
+  for (const category of categories) await walk(category);
   const catalog = await prepareCatalog(entries, async (entry) => {
     const absolute = await checkedPath(root, entry.path);
     const handle = await fsp.open(
@@ -211,9 +215,47 @@ async function createArchiveServer(directory) {
     ) {
       return reply(response, 403, "仅允许同源访问");
     }
-    if (request.method !== "GET") return reply(response, 405, "仅支持 GET");
     try {
       const url = new URL(request.url, "http://127.0.0.1:" + port);
+      if (url.pathname === "/api/assistant/query") {
+        if (request.method !== "POST")
+          return reply(response, 405, "仅支持 POST");
+        if (
+          !/^application\/json(?:\s*;|$)/i.test(
+            request.headers["content-type"] || "",
+          )
+        )
+          return reply(response, 415, "请使用 JSON 请求");
+        let size = 0;
+        const chunks = [];
+        for await (const chunk of request) {
+          size += chunk.length;
+          if (size > 8192) return reply(response, 413, "问题请求过大");
+          chunks.push(chunk);
+        }
+        let input;
+        try {
+          input = JSON.parse(Buffer.concat(chunks).toString("utf8"));
+        } catch {
+          return reply(response, 400, "JSON 无效");
+        }
+        if (
+          !input ||
+          typeof input.question !== "string" ||
+          !input.question.trim() ||
+          input.question.length > 1000
+        )
+          return reply(response, 400, "请输入 1 至 1000 字的问题");
+        return reply(
+          response,
+          200,
+          JSON.stringify(
+            queryArchive(await readCatalog(root, ["组会"]), input.question),
+          ),
+          "application/json; charset=utf-8",
+        );
+      }
+      if (request.method !== "GET") return reply(response, 405, "仅支持 GET");
       if (url.pathname === "/") {
         response.writeHead(302, { Location: "/archive.html" });
         return response.end();
