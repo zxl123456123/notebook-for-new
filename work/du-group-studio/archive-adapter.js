@@ -91,8 +91,13 @@
           );
           continue;
         }
-        if (![".pdf", ".ppt", ".pptx"].includes(extension)) {
-          issues.push("组会文件格式不支持（仅 PDF、PPT、PPTX）：" + path);
+        if (
+          name !== "cover.webp" &&
+          ![".pdf", ".ppt", ".pptx"].includes(extension)
+        ) {
+          issues.push(
+            "组会文件格式不支持（仅 PDF、PPT、PPTX 或 cover.webp）：" + path,
+          );
           continue;
         }
         var meetingId = parts.slice(0, 2).join("/");
@@ -116,7 +121,8 @@
           });
         }
         var talk = meeting.talks.get(talkId);
-        (extension === ".pdf" ? talk.papers : talk.slides).push(asset);
+        if (name === "cover.webp") talk.cover = asset;
+        else (extension === ".pdf" ? talk.papers : talk.slides).push(asset);
       } else if (parts[0] === "资料") {
         if (parts.length < 3) {
           issues.push("资料缺少分类目录（资料/分类/名称.pdf）：" + path);
@@ -165,10 +171,18 @@
 
     var meetingList = Array.from(meetings.values());
     meetingList.forEach(function (meeting) {
-      meeting.talks = Array.from(meeting.talks.values());
+      meeting.talks = Array.from(meeting.talks.values()).filter(
+        function (talk) {
+          if (talk.papers.length || talk.slides.length) return true;
+          issues.push("封面缺少论文或幻灯片：" + talk.cover.path);
+          return false;
+        },
+      );
     });
     return {
-      meetings: meetingList,
+      meetings: meetingList.filter(function (meeting) {
+        return meeting.talks.length;
+      }),
       resources: resources,
       albums: Array.from(albums.values()),
       issues: issues.sort(compare),

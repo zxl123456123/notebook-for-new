@@ -93,7 +93,11 @@ async function readCatalog(root) {
   }
   for (const meeting of catalog.meetings) {
     for (const talk of meeting.talks)
-      [...talk.papers, ...talk.slides].forEach(attach);
+      [
+        ...talk.papers,
+        ...talk.slides,
+        ...(talk.cover ? [talk.cover] : []),
+      ].forEach(attach);
   }
   catalog.resources.forEach((resource) => attach(resource.asset));
   catalog.albums.forEach((album) => album.photos.forEach(attach));
@@ -183,7 +187,26 @@ async function createArchiveServer(directory) {
       if (url.pathname === "/api/file") {
         const relative = url.searchParams.get("path");
         const absolute = await checkedPath(root, relative);
-        const catalog = buildCatalog([{ path: relative }]);
+        const entries = [{ path: relative }];
+        if (
+          relative.startsWith("组会/") &&
+          path.basename(relative) === "cover.webp"
+        ) {
+          // Validate companion attachments locally, without scanning the archive.
+          for (const name of await fsp.readdir(path.dirname(absolute))) {
+            if (!/\.(pdf|pptx?)$/i.test(name)) continue;
+            const companion =
+              relative.slice(0, relative.lastIndexOf("/") + 1) + name;
+            try {
+              const checked = await checkedPath(root, companion);
+              if ((await fsp.lstat(checked)).isFile()) {
+                entries.push({ path: companion });
+                break;
+              }
+            } catch {}
+          }
+        }
+        const catalog = buildCatalog(entries);
         if (
           !catalog.meetings.length &&
           !catalog.resources.length &&

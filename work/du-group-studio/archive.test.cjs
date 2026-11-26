@@ -147,3 +147,52 @@ test("server refreshes the catalog and reads only a valid requested asset withou
     403,
   );
 });
+
+test("optional talk covers remain separate and require attachments", () => {
+  const base = "组会/2026-11-20 讨论/张三 - 方法/";
+  const file = { name: "local-cover" };
+  const entries = [
+    { path: base + "cover.webp", file },
+    { path: base + "paper.pdf" },
+  ];
+  const result = buildCatalog(entries);
+  const talk = result.meetings[0].talks[0];
+  assert.equal(talk.cover.file, file);
+  assert.equal(talk.papers.length, 1);
+  assert.equal(talk.slides.length, 0);
+  assert.deepEqual(buildCatalog(entries.slice().reverse()), result);
+  assert.equal(buildCatalog(entries.slice(0, 1)).meetings.length, 0);
+  assert.equal(buildCatalog(entries.slice(0, 1)).issues.length, 1);
+  assert.equal(buildCatalog([{ path: base + "other.webp" }]).issues.length, 1);
+  assert.equal(
+    "cover" in buildCatalog(entries.slice(1)).meetings[0].talks[0],
+    false,
+  );
+});
+
+test("server serves optional covers only with a valid companion", async (t) => {
+  const root = await fs.mkdtemp(path.join(__dirname, ".archive-test-"));
+  const folder = "组会/2026-11-20 讨论/张三 - 方法/";
+  await fs.mkdir(path.join(root, folder), { recursive: true });
+  await fs.writeFile(path.join(root, folder, "cover.webp"), "cover-bytes");
+  const server = await createArchiveServer(root);
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
+  t.after(async () => {
+    await new Promise((resolve) => server.close(resolve));
+    assert.equal(path.dirname(root), __dirname);
+    await fs.rm(root, { recursive: true, force: true });
+  });
+  const base = "http://127.0.0.1:" + server.address().port;
+  const coverUrl =
+    "/api/file?path=" + encodeURIComponent(folder + "cover.webp");
+  assert.equal((await fetch(base + coverUrl)).status, 404);
+  await fs.writeFile(path.join(root, folder, "paper.pdf"), "pdf");
+  const catalog = await (await fetch(base + "/api/archive")).json();
+  assert.equal(catalog.meetings[0].talks[0].cover.url, coverUrl);
+  const response = await fetch(base + coverUrl);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get("content-type"), "image/webp");
+  assert.equal(await response.text(), "cover-bytes");
+  await fs.unlink(path.join(root, folder, "paper.pdf"));
+  assert.equal((await fetch(base + coverUrl)).status, 404);
+});
