@@ -12,8 +12,8 @@
       placeholder: "搜索资料名称或分类",
     },
     albums: {
-      summary: "按活动与日期翻看相册。",
-      placeholder: "搜索活动或照片名称",
+      summary: "按活动与日期浏览照片。",
+      placeholder: "搜索活动或文件名",
     },
   };
   let active = Object.hasOwn(sections, location.hash.slice(1))
@@ -179,9 +179,9 @@
     photoIndex = (index + photos.length) % photos.length;
     const asset = photos[photoIndex];
     $("full-photo").src = url(asset);
-    $("full-photo").alt = asset.name;
+    $("full-photo").alt = "第 " + (photoIndex + 1) + " 张照片";
     $("photo-caption").textContent =
-      `${photoIndex + 1} / ${photos.length} · ${asset.name}`;
+      `${photoIndex + 1} / ${photos.length}`;
     $("previous").disabled = $("next").disabled = photos.length < 2;
     const strip = $("filmstrip");
     strip.replaceChildren();
@@ -191,7 +191,7 @@
       button.type = "button";
       button.setAttribute(
         "aria-label",
-        "第 " + (i + 1) + " 张：" + photos[i].name,
+        "第 " + (i + 1) + " 张照片",
       );
       button.setAttribute("aria-pressed", String(i === photoIndex));
       const thumbnail = node("img");
@@ -448,141 +448,110 @@
       return node("span", "链接不可用", "missing");
     }
   }
-  function toggleAlbum(card) {
-    const opening = !card.classList.contains("is-open");
-    const changed = [...$("results").querySelectorAll(".album-stack")].filter(
-      (album) => album === card || album.classList.contains("is-open"),
-    );
-    const before = new Map();
-    changed.forEach((album) => {
-      album.querySelectorAll(".stack-photo").forEach((photo) => {
-        before.set(photo, {
-          rect: photo.getBoundingClientRect(),
-          opacity: getComputedStyle(photo).opacity,
-        });
-        photo.getAnimations().forEach((animation) => animation.cancel());
-      });
-    });
-    changed.forEach((album) => {
-      const open = album === card && opening;
-      album.classList.toggle("is-open", open);
-      const toggle = album.querySelector(".stack-toggle");
-      toggle.setAttribute("aria-expanded", String(open));
-      toggle.querySelector(".stack-action").textContent = open
-        ? "收回相片 ↗"
-        : "摊开这一叠 ↗";
-      album.querySelectorAll(".stack-photo").forEach((photo) => {
-        const image = photo.querySelector("img");
-        if (open && image.dataset.src) {
-          image.src = image.dataset.src;
-          delete image.dataset.src;
-        }
-        photo.disabled = !open;
-        photo.setAttribute("aria-hidden", String(!open));
-      });
-    });
-    const heading = card.querySelector(".stack-toggle");
-    const headerBox = heading.getBoundingClientRect();
-    const spread = card.querySelector(".stack-photos").getBoundingClientRect();
-    if (
-      headerBox.top < 0 ||
-      headerBox.bottom > innerHeight ||
-      (opening && spread.top + 120 > innerHeight)
-    ) {
-      heading.scrollIntoView({ block: "start", behavior: "instant" });
-    }
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    before.forEach((prior, photo) => {
-      const first = prior.rect;
-      const last = photo.getBoundingClientRect();
-      if (!last.width || !last.height) return;
-      photo.animate(
-        [
-          {
-            transform: `translate(${first.left - last.left}px, ${first.top - last.top}px) scale(${first.width / last.width}, ${first.height / last.height})`,
-            opacity: prior.opacity,
-            transformOrigin: "top left",
-          },
-          {
-            transform: getComputedStyle(photo).transform,
-            opacity: getComputedStyle(photo).opacity,
-          },
-        ],
-        { duration: 620, easing: "cubic-bezier(.22,.7,.2,1)" },
-      );
-    });
-  }
   function renderAlbum(item, card, index) {
-    card.className = "album-stack";
-    const available = item.photos.filter((photo) => url(photo));
-    const toggle = node("button", undefined, "stack-toggle");
+    card.className = "album-collection";
+    // Keep metadata separate from the rendered batch and the full-size viewer.
+    const available = item.photos.filter((photo) => photo.file || url(photo));
+    const toggle = node("button", undefined, "album-toggle");
     toggle.type = "button";
     toggle.setAttribute("aria-expanded", "false");
     toggle.setAttribute("aria-controls", "album-photos-" + index);
-    const heading = node("h2", item.title);
+    const cover = node("img", undefined, "album-cover");
+    cover.alt = "";
+    cover.loading = "lazy";
+    if (available.length) cover.src = url(available[0]);
+    const heading = node("span", undefined, "album-heading");
     const date = node("time", item.date);
     date.dateTime = item.date;
-    const meta = node("span", undefined, "stack-meta");
-    meta.append(date, node("span", item.photos.length + " 张照片"));
-    toggle.append(heading, meta, node("span", "摊开这一叠 ↗", "stack-action"));
-    const grid = node("div", undefined, "stack-photos");
-    grid.id = "album-photos-" + index;
-    available.forEach((asset, photoNumber) => {
-      const photo = node("button", undefined, "stack-photo");
-      photo.type = "button";
-      photo.disabled = true;
-      photo.setAttribute("aria-hidden", "true");
-      photo.setAttribute(
-        "aria-label",
-        `查看 ${asset.name}，第 ${photoNumber + 1} 张，共 ${available.length} 张`,
-      );
-      photo.style.setProperty("--photo-order", photoNumber);
-      photo.style.setProperty(
-        "--paper-angle",
-        [-3, 5, -7, 3][photoNumber % 4] + "deg",
-      );
-      photo.style.zIndex = Math.max(1, 3 - photoNumber);
-      const image = node("img");
-      if (photoNumber < 3) image.src = url(asset);
-      else image.dataset.src = url(asset);
-      image.alt = asset.name;
-      image.loading = "lazy";
-      photo.append(
-        image,
-        node(
-          "span",
-          `${String(photoNumber + 1).padStart(2, "0")} / ${asset.name}`,
-        ),
-      );
-      photo.addEventListener("click", () => {
-        photos = available;
-        showPhoto(photoNumber);
-      });
-      grid.append(photo);
-    });
-    if (!available.length) {
-      grid.append(node("p", "照片文件暂不可用", "missing"));
-      toggle.disabled = true;
-      toggle.querySelector(".stack-action").textContent = "等待照片";
+    heading.append(node("h2", item.title));
+    if (item.title !== item.date) heading.append(date);
+    heading.append(node("span", item.photos.length + " 张照片"));
+    const action = node(
+      "span",
+      available.length ? "查看照片 ↗" : "等待照片",
+      "album-action",
+    );
+    toggle.append(cover, heading, action);
+    toggle.disabled = !available.length;
+    const content = node("div", undefined, "album-content");
+    content.id = "album-photos-" + index;
+    content.hidden = true;
+    const back = node("button", "← 返回全部相册", "album-return");
+    back.type = "button";
+    const grid = node("div", undefined, "album-grid");
+    if (available.length < 3) grid.classList.add("album-grid-small");
+    const more = node("button", "加载更多照片", "album-more");
+    more.type = "button";
+    const status = node("p", undefined, "album-progress");
+    status.setAttribute("role", "status");
+    let loaded = 0;
+    function loadBatch(focusNew = false) {
+      const start = loaded;
+      const end = Math.min(available.length, start + 48);
+      for (; loaded < end; loaded++) {
+        const photoNumber = loaded;
+        const asset = available[photoNumber];
+        const photo = node("button", undefined, "album-photo");
+        photo.type = "button";
+        photo.setAttribute(
+          "aria-label",
+          `查看第 ${photoNumber + 1} 张，共 ${available.length} 张`,
+        );
+        const image = node("img");
+        image.src = url(asset);
+        image.alt = "";
+        image.loading = "lazy";
+        image.decoding = "async";
+        photo.append(image);
+        photo.addEventListener("click", () => {
+          photos = available;
+          showPhoto(photoNumber);
+        });
+        grid.append(photo);
+      }
+      more.hidden = loaded === available.length;
+      status.hidden = more.hidden;
+      status.textContent = `已显示 ${loaded} / ${available.length} 张`;
+      if (focusNew) grid.children[start]?.focus();
     }
-    grid.addEventListener("keydown", (event) => {
-      if (!card.classList.contains("is-open")) return;
-      if (event.key === "Escape") {
-        toggleAlbum(card);
-        toggle.focus();
-        return;
+    more.addEventListener("click", () => loadBatch(true));
+    let listScroll = 0;
+    function setOpen(open) {
+      if (open) listScroll = scrollY;
+      content.hidden = !open;
+      toggle.hidden = open;
+      card.classList.toggle("is-open", open);
+      toggle.setAttribute("aria-expanded", String(open));
+      card.parentElement.querySelectorAll(".album-collection").forEach((album) => {
+        album.hidden = open && album !== card;
+      });
+      if (open) {
+        if (!loaded) loadBatch();
+        content.scrollIntoView({ block: "start", behavior: "instant" });
+        back.focus({ preventScroll: true });
+      } else {
+        scrollTo({ top: listScroll, behavior: "instant" });
+        toggle.focus({ preventScroll: true });
       }
-      const offset = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
-      if (!offset) return;
-      const children = [...grid.querySelectorAll(".stack-photo")];
-      const index = children.indexOf(event.target);
-      if (index >= 0) {
+    }
+    back.addEventListener("click", () => setOpen(false));
+    card.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !content.hidden && !viewer.open) {
         event.preventDefault();
-        children[(index + offset + children.length) % children.length].focus();
+        setOpen(false);
       }
     });
-    toggle.addEventListener("click", () => toggleAlbum(card));
-    card.append(toggle, grid);
+    grid.addEventListener("keydown", (event) => {
+      const offset = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
+      const current = [...grid.children].indexOf(event.target);
+      if (!offset || current < 0) return;
+      event.preventDefault();
+      if (current + offset === loaded && loaded < available.length) loadBatch();
+      grid.children[Math.max(0, Math.min(loaded - 1, current + offset))]?.focus();
+    });
+    toggle.addEventListener("click", () => setOpen(content.hidden));
+    content.append(back, heading.cloneNode(true), grid, status, more);
+    card.append(toggle, content);
   }
   function render() {
     const resources = active === "resources";

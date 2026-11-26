@@ -78,6 +78,9 @@ test("server refreshes the catalog and reads only a valid requested asset withou
   const coverPath = "组会/2026-11-25 讨论/张三 - 论文/cover.webp";
   await write(coverPath, "private legacy cover");
   await write(paper);
+  const cameraPhoto = "相册/2026-11-27/DCIM/A/IMG_0001.jpg";
+  await write(cameraPhoto, "camera-photo");
+  await write("相册/2026-11-27 秋游/IMG_0001.jpg", "trip-photo");
   await write("资料/方法/非法.txt");
   await write("资料/方法/.隐藏.pdf");
   await write("不公开/私有.pdf");
@@ -89,6 +92,14 @@ test("server refreshes the catalog and reads only a valid requested asset withou
   const catalog = async () => (await fetch(base + "/api/archive")).json();
   const asset = (relative) =>
     fetch(base + "/api/file?path=" + encodeURIComponent(relative));
+  const albumCatalog = (await catalog()).albums;
+  assert.equal(albumCatalog.length, 2);
+  const photoResponse = await asset(cameraPhoto);
+  assert.equal(photoResponse.status, 200);
+  assert.equal(photoResponse.headers.get("content-type"), "image/jpeg");
+  assert.equal(await photoResponse.text(), "camera-photo");
+  assert.equal((await asset("相册/2026-11-27 秋游/IMG_0001.jpg")).status, 200);
+  assert.equal((await asset("相册/2026-11-31/DCIM/A/IMG_0001.jpg")).status, 404);
   assert.equal((await catalog()).resources.length, 4);
   await write("资料/方法/新增.pdf");
   assert.equal((await catalog()).resources.length, 5);
@@ -259,14 +270,18 @@ test("resource files and HTTP shortcuts share directory and File preparation", a
   assert.equal(large.issues.length, 1);
 });
 
-test("albums still require an activity name after the date", () => {
+test("albums accept date-only folders and camera subdirectories without renaming photos", () => {
   const catalog = buildCatalog([
-    { path: "相册/2026-11-27/a.jpg" },
-    { path: "相册/2026-11-27 秋游/a.jpg" },
+    { path: "相册/2026-11-27/IMG_0001.jpg" },
+    { path: "相册/2026-11-27/DCIM/A/IMG_0001.jpg" },
+    { path: "相册/2026-11-27 秋游/IMG_0001.jpg" },
   ]);
-  assert.equal(catalog.albums.length, 1);
-  assert.equal(catalog.albums[0].title, "秋游");
-  assert.equal(catalog.issues.length, 1);
+  assert.equal(catalog.albums.length, 2);
+  const unnamed = catalog.albums.find((album) => album.title === "2026-11-27");
+  assert.equal(unnamed.photos.length, 2);
+  assert.notEqual(unnamed.photos[0].path, unnamed.photos[1].path);
+  assert.ok(catalog.albums.some((album) => album.title === "秋游"));
+  assert.equal(catalog.issues.length, 0);
 });
 
 test("imports a Unicode Windows website shortcut without reading its target", async () => {

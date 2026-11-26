@@ -241,10 +241,13 @@ media 的父关系是“至多选其中一条”，并非允许同时属于多�
 组会/YYYY-MM-DD( 主题可选)/任意.pdf 或 任意.ppt 或 任意.pptx
 组会/YYYY-MM-DD 主题/汇报人 - 论文简称/任意.pdf 或 任意.ppt 或 任意.pptx（兼容旧目录）
 资料/<主题分类>(/<子类>...)/名称.pdf 或 .ppt/.pptx/.doc/.docx/.dotx/.md/.tex/.bib/.zip/.url
-相册/YYYY-MM-DD 活动名/*.jpg/jpeg/png/webp
+相册/2026-11-20/DCIM/IMG_0001.jpg
+相册/2026-11-20 秋游/DSC_0042.webp
 ```
 
 组会按日期文件夹直接收录 PDF 与 PPT/PPTX，无需提图、封面或论文分析；旧汇报人子目录继续兼容。已有 `cover.webp` 静默忽略，不读取、不删除、不生成业务字段。直接附在日期目录下的文件形成一项“本场文件”，不猜测汇报人。
+
+相册以第一层日期文件夹归集照片，活动名可选。同一天有两次活动时，可以分别给文件夹加活动名。整批拷入 JPG、JPEG、PNG 或 WebP 即可，保留相机文件名和子目录。不同子目录中同名的照片各占一张。点开活动可分批浏览缩略图，在大图里可连续翻完整场。
 
 资料按主题混放原始文件与外部链接。链接采用通用 `.url` 互联网快捷方式：UTF-8 或带 BOM 的 UTF-16 小文本（上限 16 KiB），`[InternetShortcut]` 段中包含唯一 `URL=https://...` 或 `URL=http://...`。只读取地址，不请求目标、图标或网页内容，不把快捷方式当附件下载。适配器的 `prepareCatalog(entries, readText?)` 异步准备文本；浏览器只读取快捷方式的内容，目录扫描提供可信读取回调，复用同一解析。资源输出 `{id,title,category,asset}` 或 `{id,title,category,href}`；PDF 与相册图片 inline，Office、Markdown、LaTeX/BibTeX 与 ZIP 下载。其他文件格式（包括算法脚本）不在本次支持范围。
 

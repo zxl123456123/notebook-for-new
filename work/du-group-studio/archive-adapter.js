@@ -235,13 +235,9 @@
         });
       } else if (parts[0] === "相册") {
         var albumInfo = datedFolder(parts[1] || "");
-        if (
-          parts.length !== 3 ||
-          !albumInfo ||
-          !/^\d{4}-\d{2}-\d{2}\s+.+/.test(parts[1])
-        ) {
+        if (parts.length < 3 || !albumInfo) {
           issues.push(
-            "相册目录格式或日期无效（相册/YYYY-MM-DD 活动名/照片）：" + path,
+            "相册目录格式或日期无效（相册/YYYY-MM-DD [活动名]/[子目录/]照片）：" + path,
           );
           continue;
         }
@@ -254,7 +250,7 @@
           albums.set(albumId, {
             id: albumId,
             date: albumInfo.date,
-            title: albumInfo.title,
+            title: parts[1].slice(10).trim() || albumInfo.date,
             photos: [],
           });
         }
