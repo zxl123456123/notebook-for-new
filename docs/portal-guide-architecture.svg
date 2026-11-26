@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="640" viewBox="0 0 1000 640" role="img" aria-labelledby="title description" lang="zh-CN">
+  <title id="title">Du's Group 门户与网站向导目标架构</title>
+  <desc id="description">浏览器中，学生可以直接浏览团队首页、学生专栏、组会、资料库和相册，也可以在任一页面向全站向导提问。网站通过 HTTPS 访问 Next.js 与 Payload 单体。编辑在后台发布网站使用指南，单体按读者权限读取 PostgreSQL 中的指南、目录和身份信息，并提供文件卷内的原件。需要对话时，单体经私网调用 OpenClaw，按会话复用上下文。返回的功能标识由网站校验并解析成可点击的站内入口。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M1 1 L9 5 L1 9" fill="none" stroke="#416d59" stroke-width="1.6"/>
+    </marker>
+    <style>
+      text { font-family: "Microsoft YaHei","PingFang SC","Noto Sans CJK SC",sans-serif; fill: #214633; }
+      .title { font-size: 31px; font-weight: 700; }
+      .head { font-size: 23px; font-weight: 700; }
+      .body { font-size: 19px; }
+      .note { font-size: 16px; fill: #58695a; }
+      .panel { fill: #fffdf6; stroke: #879d8d; stroke-width: 1.5; }
+      .flow { fill: none; stroke: #416d59; stroke-width: 2; marker-start: url(#arrow); marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1000" height="640" fill="#f8f5eb"/>
+  <text x="34" y="51" class="title">Du's Group · 门户与网站向导</text>
+  <text x="966" y="48" text-anchor="end" class="body">目标架构</text>
+
+  <rect x="32" y="80" width="936" height="128" rx="15" class="panel"/>
+  <line x1="490" y1="100" x2="490" y2="187" stroke="#d4dacc"/>
+  <text x="54" y="116" class="head">前端 · Next.js 网站</text>
+  <text x="54" y="151" class="body">团队首页、学生专栏</text>
+  <text x="54" y="181" class="body">组会、资料库、活动相册</text>
+  <text x="515" y="116" class="head">全站向导 ·「问问组里」</text>
+  <text x="515" y="151" class="body">提问时带上当前页面和所选栏目</text>
+  <text x="515" y="181" class="body">显示操作步骤，点按钮跳到对应位置</text>
+
+  <rect x="32" y="267" width="936" height="350" rx="15" fill="#edf1e6" stroke="#aebcaa" stroke-width="1.4"/>
+  <text x="55" y="294" class="note">腾讯云服务器 · Docker Compose</text>
+  <path d="M360 210 V314" class="flow"/>
+  <text x="375" y="245" class="note">HTTPS · 页面、问答与附件共用本站入口</text>
+
+  <rect x="52" y="316" width="548" height="141" rx="12" class="panel"/>
+  <text x="74" y="352" class="head">网站后端 · Next.js + Payload</text>
+  <text x="74" y="385" class="body">编辑后台发布内容，服务端校验身份与权限</text>
+  <text x="74" y="415" class="body">检索使用指南、组会及资料，生成站内链接</text>
+  <text x="74" y="441" class="note">问答模块核验会话归属、来源与可执行的导航动作</text>
+
+  <rect x="715" y="316" width="231" height="141" rx="12" fill="#fbefe3" stroke="#b8997f" stroke-width="1.5"/>
+  <text x="735" y="352" class="head">OpenClaw</text>
+  <text x="735" y="385" class="body">理解提问、延续对话</text>
+  <text x="735" y="415" class="body">据指南组织回答</text>
+  <text x="735" y="441" class="note">调用已获准的模型服务</text>
+  <path d="M603 402 H712" class="flow"/>
+  <text x="657" y="386" text-anchor="middle" class="note">私网调用</text>
+
+  <path d="M176 459 V512" class="flow"/>
+  <text x="193" y="493" class="note">按权限读写</text>
+  <path d="M549 459 V512" class="flow"/>
+  <text x="566" y="493" class="note">上传、鉴权下载</text>
+  <rect x="52" y="515" width="424" height="79" rx="12" class="panel"/>
+  <text x="74" y="545" class="head">PostgreSQL</text>
+  <text x="74" y="574" class="note">门户内容、指南步骤、档案目录、账号与会话归属</text>
+  <rect x="507" y="515" width="439" height="79" rx="12" class="panel"/>
+  <text x="529" y="545" class="head">持久文件卷</text>
+  <text x="529" y="574" class="body">论文 PDF、汇报 PPT、模板和照片原件</text>
+</svg>
