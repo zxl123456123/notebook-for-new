@@ -15,6 +15,25 @@ const staticFiles = new Map([
   ["/index.html", "text/html; charset=utf-8"],
   ["/studio.webp", "image/webp"],
 ]);
+// Serve only the bundled illustrations and sample photographs.
+for (const name of [
+  "shelf-writing",
+  "shelf-template",
+  "shelf-algorithm",
+  "shelf-lecture",
+  "shelf-web",
+  "shelf-topic",
+  "trip-path",
+  "trip-leaves",
+  "trip-lake",
+  "trip-lighthouse",
+  "trip-rope",
+  "trip-boats",
+  "trip-waves",
+  "trip-bicycle",
+  "trip-sunset",
+])
+  staticFiles.set("/" + name + ".webp", "image/webp");
 const mediaTypes = new Map([
   [".pdf", "application/pdf"],
   [".doc", "application/msword"],

@@ -22,10 +22,17 @@
   let demo = false;
   let realSnapshot = null;
   let serverSource = false;
-  const demoImages = Array.from(
-    $("sample-scenes").content.querySelectorAll("img"),
-    (image) => image.dataset.src,
-  );
+  const demoImages = [
+    "path",
+    "leaves",
+    "lake",
+    "lighthouse",
+    "rope",
+    "boats",
+    "waves",
+    "bicycle",
+    "sunset",
+  ].map((name) => "trip-" + name + ".webp");
   const demoAsset = (name) => ({ name, demo: true });
   const demoCatalog = {
     meetings: [
@@ -91,11 +98,23 @@
       {
         date: "2026-11-20",
         title: "秋日漫步",
-        photos: [1, 2, 3].map((index) => ({
-          name: ["林间小径", "秋叶", "湖面"][index - 1],
+        photos: ["林间小径", "秋叶", "湖面"].map((name, i) => ({
+          name,
           demo: true,
-          previewIndex: index - 1,
+          previewIndex: i,
         })),
+      },
+      {
+        date: "2026-06-06",
+        title: "海边一日",
+        photos: [
+          "海堤灯塔",
+          "码头缆绳",
+          "渔港",
+          "潮汐",
+          "街角单车",
+          "日落",
+        ].map((name, i) => ({ name, demo: true, previewIndex: i + 3 })),
       },
     ],
     issues: [],
@@ -134,6 +153,8 @@
   function release() {
     if (viewer.open) viewer.close();
     $("full-photo").removeAttribute("src");
+    $("filmstrip").replaceChildren();
+    photos = [];
     urls.forEach((value) => URL.revokeObjectURL(value));
     urls.clear();
   }
@@ -315,7 +336,100 @@
       folderList.append(folder);
     });
   }
+  const topicArt = {
+    写作经验: "shelf-writing.webp",
+    论文模板: "shelf-template.webp",
+    算法教学: "shelf-algorithm.webp",
+    讲座分享: "shelf-lecture.webp",
+    常用网站: "shelf-web.webp",
+  };
+  function resourceArt(category) {
+    const art = node("span", undefined, "resource-art");
+    art.setAttribute("aria-hidden", "true");
+    const image = node("img");
+    image.src =
+      category
+        .split("/")
+        .reverse()
+        .map((part) => topicArt[part])
+        .find(Boolean) || "shelf-topic.webp";
+    image.alt = "";
+    image.width = 320;
+    image.height = 260;
+    art.append(image);
+    return art;
+  }
+  function renderResourceShelf() {
+    let shelf = $("resource-shelf");
+    if (!shelf) {
+      shelf = node("section", undefined, "resource-shelf");
+      shelf.id = "resource-shelf";
+      $("results").before(shelf);
+    }
+    shelf.hidden = active !== "resources";
+    if (shelf.hidden) return;
+    const emptyLibrary = !catalog?.resources.length;
+    const source = emptyLibrary ? demoCatalog.resources : catalog.resources;
+    const categories = [
+      ...new Set(source.map((item) => item.category || "未分类")),
+    ];
+    shelf.replaceChildren();
+    const heading = node("div", undefined, "resource-shelf-heading");
+    const all = node("button", "查看全部 ↗");
+    all.type = "button";
+    all.addEventListener("click", () => {
+      if (emptyLibrary) $("preview-toggle").click();
+      $("category").value = "";
+      render();
+      $("resource-shelf")
+        .querySelector("button")
+        .focus({ preventScroll: true });
+    });
+    heading.append(
+      node(
+        "span",
+        emptyLibrary
+          ? "主题书架 · 示例"
+          : demo
+            ? "主题书架 · 示例"
+            : "主题书架",
+      ),
+      all,
+    );
+    const objects = node("div", undefined, "resource-objects");
+    categories.forEach((category) => {
+      const button = node("button", undefined, "resource-object");
+      button.type = "button";
+      button.dataset.category = category;
+      button.setAttribute(
+        "aria-pressed",
+        String($("category").value === category),
+      );
+      const count = source.filter(
+        (item) => (item.category || "未分类") === category,
+      ).length;
+      button.append(
+        resourceArt(category),
+        node("strong", category),
+        node(
+          "small",
+          `${emptyLibrary || demo ? "示例 · " : ""}${count} 份资料`,
+        ),
+      );
+      button.addEventListener("click", () => {
+        if (emptyLibrary) $("preview-toggle").click();
+        $("category").value = category === "未分类" ? "" : category;
+        render();
+        [...$("resource-shelf").querySelectorAll(".resource-object")]
+          .find((item) => item.dataset.category === category)
+          ?.focus({ preventScroll: true });
+      });
+      objects.append(button);
+    });
+    shelf.append(heading, objects);
+  }
   function resourceLink(item) {
+    if (demo && item.asset) return node("span", "示例", "demo-asset");
     if (item.asset) {
       const link = assetLink(item.asset);
       link.textContent = /\.pdf$/i.test(item.asset.name) ? "打开" : "下载";
@@ -333,6 +447,142 @@
     } catch {
       return node("span", "链接不可用", "missing");
     }
+  }
+  function toggleAlbum(card) {
+    const opening = !card.classList.contains("is-open");
+    const changed = [...$("results").querySelectorAll(".album-stack")].filter(
+      (album) => album === card || album.classList.contains("is-open"),
+    );
+    const before = new Map();
+    changed.forEach((album) => {
+      album.querySelectorAll(".stack-photo").forEach((photo) => {
+        before.set(photo, {
+          rect: photo.getBoundingClientRect(),
+          opacity: getComputedStyle(photo).opacity,
+        });
+        photo.getAnimations().forEach((animation) => animation.cancel());
+      });
+    });
+    changed.forEach((album) => {
+      const open = album === card && opening;
+      album.classList.toggle("is-open", open);
+      const toggle = album.querySelector(".stack-toggle");
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.querySelector(".stack-action").textContent = open
+        ? "收回相片 ↗"
+        : "摊开这一叠 ↗";
+      album.querySelectorAll(".stack-photo").forEach((photo) => {
+        const image = photo.querySelector("img");
+        if (open && image.dataset.src) {
+          image.src = image.dataset.src;
+          delete image.dataset.src;
+        }
+        photo.disabled = !open;
+        photo.setAttribute("aria-hidden", String(!open));
+      });
+    });
+    const heading = card.querySelector(".stack-toggle");
+    const headerBox = heading.getBoundingClientRect();
+    const spread = card.querySelector(".stack-photos").getBoundingClientRect();
+    if (
+      headerBox.top < 0 ||
+      headerBox.bottom > innerHeight ||
+      (opening && spread.top + 120 > innerHeight)
+    ) {
+      heading.scrollIntoView({ block: "start", behavior: "instant" });
+    }
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    before.forEach((prior, photo) => {
+      const first = prior.rect;
+      const last = photo.getBoundingClientRect();
+      if (!last.width || !last.height) return;
+      photo.animate(
+        [
+          {
+            transform: `translate(${first.left - last.left}px, ${first.top - last.top}px) scale(${first.width / last.width}, ${first.height / last.height})`,
+            opacity: prior.opacity,
+            transformOrigin: "top left",
+          },
+          {
+            transform: getComputedStyle(photo).transform,
+            opacity: getComputedStyle(photo).opacity,
+          },
+        ],
+        { duration: 620, easing: "cubic-bezier(.22,.7,.2,1)" },
+      );
+    });
+  }
+  function renderAlbum(item, card, index) {
+    card.className = "album-stack";
+    const available = item.photos.filter((photo) => url(photo));
+    const toggle = node("button", undefined, "stack-toggle");
+    toggle.type = "button";
+    toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-controls", "album-photos-" + index);
+    const heading = node("h2", item.title);
+    const date = node("time", item.date);
+    date.dateTime = item.date;
+    const meta = node("span", undefined, "stack-meta");
+    meta.append(date, node("span", item.photos.length + " 张照片"));
+    toggle.append(heading, meta, node("span", "摊开这一叠 ↗", "stack-action"));
+    const grid = node("div", undefined, "stack-photos");
+    grid.id = "album-photos-" + index;
+    available.forEach((asset, photoNumber) => {
+      const photo = node("button", undefined, "stack-photo");
+      photo.type = "button";
+      photo.disabled = true;
+      photo.setAttribute("aria-hidden", "true");
+      photo.setAttribute(
+        "aria-label",
+        `查看 ${asset.name}，第 ${photoNumber + 1} 张，共 ${available.length} 张`,
+      );
+      photo.style.setProperty("--photo-order", photoNumber);
+      photo.style.setProperty(
+        "--paper-angle",
+        [-3, 5, -7, 3][photoNumber % 4] + "deg",
+      );
+      photo.style.zIndex = Math.max(1, 3 - photoNumber);
+      const image = node("img");
+      if (photoNumber < 3) image.src = url(asset);
+      else image.dataset.src = url(asset);
+      image.alt = asset.name;
+      image.loading = "lazy";
+      photo.append(
+        image,
+        node(
+          "span",
+          `${String(photoNumber + 1).padStart(2, "0")} / ${asset.name}`,
+        ),
+      );
+      photo.addEventListener("click", () => {
+        photos = available;
+        showPhoto(photoNumber);
+      });
+      grid.append(photo);
+    });
+    if (!available.length) {
+      grid.append(node("p", "照片文件暂不可用", "missing"));
+      toggle.disabled = true;
+      toggle.querySelector(".stack-action").textContent = "等待照片";
+    }
+    grid.addEventListener("keydown", (event) => {
+      if (!card.classList.contains("is-open")) return;
+      if (event.key === "Escape") {
+        toggleAlbum(card);
+        toggle.focus();
+        return;
+      }
+      const offset = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
+      if (!offset) return;
+      const children = [...grid.querySelectorAll(".stack-photo")];
+      const index = children.indexOf(event.target);
+      if (index >= 0) {
+        event.preventDefault();
+        children[(index + offset + children.length) % children.length].focus();
+      }
+    });
+    toggle.addEventListener("click", () => toggleAlbum(card));
+    card.append(toggle, grid);
   }
   function render() {
     const resources = active === "resources";
@@ -353,6 +603,7 @@
     $("preview-status").hidden = !demo;
     $("category-label").hidden = !resources;
     $("date-filters").hidden = resources;
+    renderResourceShelf();
     const results = $("results");
     results.className = active;
     results.replaceChildren();
@@ -369,21 +620,7 @@
       action.addEventListener("click", () => $("preview-toggle").click());
       sample.append(action);
       if (active === "resources") {
-        const index = node("div", undefined, "topic-swatches");
-        demoCatalog.resources.forEach((item, i) => {
-          const tab = node("button", item.category);
-          tab.type = "button";
-          tab.setAttribute("aria-label", "查看" + item.category + "样例");
-          tab.style.setProperty("--slot", i);
-          tab.addEventListener("click", () => {
-            $("preview-toggle").click();
-            $("category").value = item.category;
-            render();
-            $("category").focus({ preventScroll: true });
-          });
-          index.append(tab);
-        });
-        sample.append(index);
+        sample.hidden = true;
       } else if (active === "albums") {
         const stack = node("span", undefined, "album-sample");
         demoImages.slice(0, 3).forEach((src) => {
@@ -461,7 +698,7 @@
           a.category.localeCompare(b.category, "zh-CN") ||
           a.title.localeCompare(b.title, "zh-CN"),
       );
-    items.forEach((item) => {
+    items.forEach((item, itemIndex) => {
       if (resources && item.category !== previousCategory) {
         const group = node("section", undefined, "topic-group");
         group.append(node("h2", item.category || "未分类", "category-heading"));
@@ -476,63 +713,35 @@
         const extension = item.asset?.name
           .match(/\.([^.]+)$/)?.[1]
           ?.toUpperCase();
-        card.append(
-          node("span", item.asset ? extension || "文件" : "网站", "file-kind"),
+        const preview = node("span", undefined, "resource-file-preview");
+        preview.dataset.kind = item.asset
+          ? /^(PDF|DOCX?|DOTX)$/.test(extension || "")
+            ? "paper"
+            : "file"
+          : "web";
+        preview.setAttribute("aria-hidden", "true");
+        preview.append(
+          node("span", item.asset ? extension || "FILE" : "WWW"),
+          node("i"),
+          node("i"),
+          node("i"),
+        );
+        const detail = node("div", undefined, "resource-detail");
+        let description = item.asset?.name || "网页链接";
+        if (!item.asset) {
+          try {
+            description = new URL(item.href).hostname;
+          } catch {
+            /* The action reports unavailable URLs. */
+          }
+        }
+        detail.append(
           node("span", item.title, "resource-title"),
-          resourceLink(item),
+          node("small", description, "resource-description"),
         );
+        card.append(preview, detail, resourceLink(item));
       } else {
-        const date = node("time", undefined, "date");
-        date.dateTime = item.date;
-        date.append(
-          node("span", item.date.slice(0, 7).replace("-", " / "), "date-month"),
-          node("strong", item.date.slice(8), "date-day"),
-        );
-        const content = node("div", undefined, "record-content");
-        content.append(node("h2", item.title));
-        const available = item.photos.filter((photo) => url(photo));
-        content.append(
-          node(
-            "p",
-            item.photos.length + " 张照片 · 点击照片翻阅",
-            "record-meta",
-          ),
-        );
-        const grid = node("div", undefined, "gallery");
-        available.slice(0, 4).forEach((asset, index) => {
-          const button = node("button", undefined, "photo");
-          button.type = "button";
-          button.setAttribute(
-            "aria-label",
-            "查看 " +
-              asset.name +
-              "，第 " +
-              (index + 1) +
-              " 张，共 " +
-              available.length +
-              " 张",
-          );
-          const img = node("img");
-          img.src = url(asset);
-          img.alt = asset.name;
-          img.loading = "lazy";
-          button.append(
-            img,
-            node(
-              "span",
-              index === 3 && available.length > 4
-                ? "查看全部 " + available.length + " 张 →"
-                : asset.name,
-            ),
-          );
-          button.addEventListener("click", () => {
-            photos = available;
-            showPhoto(index);
-          });
-          grid.append(button);
-        });
-        content.append(grid);
-        card.append(date, content);
+        renderAlbum(item, card, itemIndex);
       }
       (resources ? topicItems : results).append(card);
     });
