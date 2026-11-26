@@ -5,7 +5,7 @@ const assert = require("node:assert/strict");
 const fs = require("node:fs/promises");
 const path = require("node:path");
 const http = require("node:http");
-const { buildCatalog } = require("./archive-adapter.js");
+const { buildCatalog, prepareCatalog } = require("./archive-adapter.js");
 const { createArchiveServer } = require("./archive-server.cjs");
 
 test("catalog groups multiple presenters, deduplicates and keeps partial talks", () => {
@@ -67,6 +67,16 @@ test("server refreshes the catalog and reads only a valid requested asset withou
     await fs.writeFile(destination, content);
   }
   const paper = "资料/方法/中文.pdf";
+  await write("资料/写作/模板.docx", "word");
+  await write("资料/写作/经验.md", "# notes");
+  await write(
+    "资料/写作/讲座.url",
+    "[InternetShortcut]\nURL=https://example.com/talk",
+  );
+  await write("资料/写作/恶意.url", "[InternetShortcut]\nURL=file:///private");
+  await write("资料/写作/过大.url", "x".repeat(16385));
+  const coverPath = "组会/2026-11-25 讨论/张三 - 论文/cover.webp";
+  await write(coverPath, "private legacy cover");
   await write(paper);
   await write("资料/方法/非法.txt");
   await write("资料/方法/.隐藏.pdf");
@@ -79,10 +89,39 @@ test("server refreshes the catalog and reads only a valid requested asset withou
   const catalog = async () => (await fetch(base + "/api/archive")).json();
   const asset = (relative) =>
     fetch(base + "/api/file?path=" + encodeURIComponent(relative));
-  assert.equal((await catalog()).resources.length, 1);
+  assert.equal((await catalog()).resources.length, 4);
   await write("资料/方法/新增.pdf");
-  assert.equal((await catalog()).resources.length, 2);
+  assert.equal((await catalog()).resources.length, 5);
   const ppt = (await catalog()).meetings[0].talks[0].slides[0];
+  const resourceList = (await catalog()).resources;
+  assert.equal(
+    resourceList.find((item) => item.href).href,
+    "https://example.com/talk",
+  );
+  for (const [name, type] of [
+    [
+      "模板.docx",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ],
+    ["经验.md", "text/markdown; charset=utf-8"],
+  ]) {
+    const response = await asset("资料/写作/" + name);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get("content-type"), type);
+    assert.match(response.headers.get("content-disposition"), /^attachment/);
+    await response.arrayBuffer();
+  }
+  for (const relative of [
+    coverPath,
+    "资料/写作/讲座.url",
+    "资料/写作/恶意.url",
+    "资料/写作/过大.url",
+  ])
+    assert.equal((await asset(relative)).status, 404);
+  assert.equal(
+    await fs.readFile(path.join(root, coverPath), "utf8"),
+    "private legacy cover",
+  );
 
   // A file request must not enumerate the archive, even when many photos are loaded.
   const originalReadDir = fs.readdir;
@@ -123,7 +162,7 @@ test("server refreshes the catalog and reads only a valid requested asset withou
   } finally {
     fs.readdir = originalReadDir;
   }
-  assert.equal((await catalog()).resources.length, 1);
+  assert.equal((await catalog()).resources.length, 4);
   assert.equal((await fetch(base + "/archive-server.cjs")).status, 404);
   const badHostStatus = await new Promise((resolve, reject) => {
     http
@@ -148,51 +187,98 @@ test("server refreshes the catalog and reads only a valid requested asset withou
   );
 });
 
-test("optional talk covers remain separate and require attachments", () => {
-  const base = "组会/2026-11-20 讨论/张三 - 方法/";
-  const file = { name: "local-cover" };
-  const entries = [
-    { path: base + "cover.webp", file },
-    { path: base + "paper.pdf" },
-  ];
-  const result = buildCatalog(entries);
-  const talk = result.meetings[0].talks[0];
-  assert.equal(talk.cover.file, file);
-  assert.equal(talk.papers.length, 1);
-  assert.equal(talk.slides.length, 0);
-  assert.deepEqual(buildCatalog(entries.slice().reverse()), result);
-  assert.equal(buildCatalog(entries.slice(0, 1)).meetings.length, 0);
-  assert.equal(buildCatalog(entries.slice(0, 1)).issues.length, 1);
-  assert.equal(buildCatalog([{ path: base + "other.webp" }]).issues.length, 1);
-  assert.equal(
-    "cover" in buildCatalog(entries.slice(1)).meetings[0].talks[0],
-    false,
-  );
+test("direct dated meetings accept files and silently ignore legacy covers", () => {
+  const result = buildCatalog([
+    { path: "组会/2026-11-27/a.pdf" },
+    { path: "组会/2026-11-27/b.pptx" },
+    { path: "组会/2026-11-27/cover.webp" },
+    { path: "组会/2026-11-28 组会/a.ppt" },
+    { path: "组会/2026-11-28 组会/张三 - 论文/cover.webp" },
+    { path: "组会/2026-11-28 组会/张三 - 论文/a.pdf" },
+    { path: "组会/2026-11-27/多余/目录/a.pdf" },
+  ]);
+  assert.equal(result.meetings.length, 2);
+  assert.equal(result.meetings[0].talks[0].presenter, "");
+  assert.equal(result.meetings[0].talks[0].papers.length, 1);
+  assert.equal(result.meetings[0].talks[0].slides.length, 1);
+  assert.equal(result.issues.length, 1);
+  assert.equal(JSON.stringify(result).includes("cover"), false);
 });
 
-test("server serves optional covers only with a valid companion", async (t) => {
-  const root = await fs.mkdtemp(path.join(__dirname, ".archive-test-"));
-  const folder = "组会/2026-11-20 讨论/张三 - 方法/";
-  await fs.mkdir(path.join(root, folder), { recursive: true });
-  await fs.writeFile(path.join(root, folder, "cover.webp"), "cover-bytes");
-  const server = await createArchiveServer(root);
-  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-  t.after(async () => {
-    await new Promise((resolve) => server.close(resolve));
-    assert.equal(path.dirname(root), __dirname);
-    await fs.rm(root, { recursive: true, force: true });
-  });
-  const base = "http://127.0.0.1:" + server.address().port;
-  const coverUrl =
-    "/api/file?path=" + encodeURIComponent(folder + "cover.webp");
-  assert.equal((await fetch(base + coverUrl)).status, 404);
-  await fs.writeFile(path.join(root, folder, "paper.pdf"), "pdf");
-  const catalog = await (await fetch(base + "/api/archive")).json();
-  assert.equal(catalog.meetings[0].talks[0].cover.url, coverUrl);
-  const response = await fetch(base + coverUrl);
-  assert.equal(response.status, 200);
-  assert.equal(response.headers.get("content-type"), "image/webp");
-  assert.equal(await response.text(), "cover-bytes");
-  await fs.unlink(path.join(root, folder, "paper.pdf"));
-  assert.equal((await fetch(base + coverUrl)).status, 404);
+test("resource files and HTTP shortcuts share directory and File preparation", async () => {
+  const entries = [
+    "pdf",
+    "ppt",
+    "pptx",
+    "doc",
+    "docx",
+    "dotx",
+    "md",
+    "tex",
+    "bib",
+    "zip",
+  ].map((ext) => ({ path: "资料/写作/模板." + ext }));
+  const shortcuts = [
+    "https://example.com/a",
+    "http://example.com/",
+    "javascript:alert(1)",
+    "file:///tmp/a",
+    "https://example.com/\nURL=https://other.example/",
+  ];
+  const content = shortcuts.map((url) => "[InternetShortcut]\nURL=" + url);
+  const links = content.map((text, i) => ({
+    path: "资料/写作/链接" + i + ".url",
+    file: new Blob([text]),
+  }));
+  const fromFiles = await prepareCatalog([...entries, ...links]);
+  const fromDirectory = await prepareCatalog(
+    [...entries, ...links.map(({ path }) => ({ path }))],
+    (entry) => content[Number(/链接(\d+)/.exec(entry.path)[1])],
+  );
+  assert.deepEqual(fromFiles, fromDirectory);
+  assert.equal(fromFiles.resources.length, 12);
+  assert.equal(fromFiles.issues.length, 3);
+  assert.equal(fromFiles.resources.filter((item) => item.href).length, 2);
+  assert.equal(
+    buildCatalog([{ path: "资料/写作/link.url" }]).resources.length,
+    0,
+  );
+  let read = false;
+  const large = await prepareCatalog([
+    {
+      path: "资料/写作/large.url",
+      file: {
+        size: 16385,
+        arrayBuffer: () => {
+          read = true;
+        },
+      },
+    },
+  ]);
+  assert.equal(read, false);
+  assert.equal(large.issues.length, 1);
+});
+
+test("albums still require an activity name after the date", () => {
+  const catalog = buildCatalog([
+    { path: "相册/2026-11-27/a.jpg" },
+    { path: "相册/2026-11-27 秋游/a.jpg" },
+  ]);
+  assert.equal(catalog.albums.length, 1);
+  assert.equal(catalog.albums[0].title, "秋游");
+  assert.equal(catalog.issues.length, 1);
+});
+
+test("imports a Unicode Windows website shortcut without reading its target", async () => {
+  const file = new Blob([
+    Buffer.from(
+      "\uFEFF[InternetShortcut]\r\nURL=https://example.org/算法",
+      "utf16le",
+    ),
+  ]);
+  const catalog = await prepareCatalog([{ path: "资料/算法/讲义.url", file }]);
+  assert.equal(
+    catalog.resources[0].href,
+    new URL("https://example.org/算法").href,
+  );
 });

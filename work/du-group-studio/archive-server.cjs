@@ -5,7 +5,7 @@ const fs = require("node:fs");
 const fsp = fs.promises;
 const path = require("node:path");
 const { pipeline } = require("node:stream");
-const { buildCatalog } = require("./archive-adapter.js");
+const { buildCatalog, prepareCatalog } = require("./archive-adapter.js");
 
 const staticFiles = new Map([
   ["/archive.html", "text/html; charset=utf-8"],
@@ -17,6 +17,19 @@ const staticFiles = new Map([
 ]);
 const mediaTypes = new Map([
   [".pdf", "application/pdf"],
+  [".doc", "application/msword"],
+  [".tex", "application/x-tex"],
+  [".bib", "text/plain; charset=utf-8"],
+  [".zip", "application/zip"],
+  [
+    ".docx",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ],
+  [
+    ".dotx",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.template",
+  ],
+  [".md", "text/markdown; charset=utf-8"],
   [".jpg", "image/jpeg"],
   [".jpeg", "image/jpeg"],
   [".png", "image/png"],
@@ -86,20 +99,31 @@ async function readCatalog(root) {
     }
   }
   for (const category of ["组会", "资料", "相册"]) await walk(category);
-  const catalog = buildCatalog(entries);
+  const catalog = await prepareCatalog(entries, async (entry) => {
+    const absolute = await checkedPath(root, entry.path);
+    const handle = await fsp.open(
+      absolute,
+      fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW || 0),
+    );
+    try {
+      if ((await handle.stat()).size > 16 * 1024)
+        throw new Error("Shortcut too large");
+      return await handle.readFile();
+    } finally {
+      await handle.close();
+    }
+  });
   catalog.issues.push(...scanIssues);
   function attach(asset) {
     asset.url = "/api/file?path=" + encodeURIComponent(asset.path);
   }
   for (const meeting of catalog.meetings) {
     for (const talk of meeting.talks)
-      [
-        ...talk.papers,
-        ...talk.slides,
-        ...(talk.cover ? [talk.cover] : []),
-      ].forEach(attach);
+      [...talk.papers, ...talk.slides].forEach(attach);
   }
-  catalog.resources.forEach((resource) => attach(resource.asset));
+  catalog.resources.forEach((resource) => {
+    if (resource.asset) attach(resource.asset);
+  });
   catalog.albums.forEach((album) => album.photos.forEach(attach));
   return catalog;
 }
@@ -122,9 +146,9 @@ async function sendFile(response, absolute, type, downloadName) {
     if (!stat.isFile()) throw new Error("Not a regular file");
     const headers = { "Content-Type": type, "Content-Length": stat.size };
     if (downloadName) {
-      const disposition = /\.pptx?$/i.test(downloadName)
-        ? "attachment"
-        : "inline";
+      const disposition = /\.(pdf|jpg|jpeg|png|webp)$/i.test(downloadName)
+        ? "inline"
+        : "attachment";
       const encodedName = encodeURIComponent(downloadName).replace(
         /['()*]/g,
         (char) => "%" + char.charCodeAt(0).toString(16).toUpperCase(),
@@ -188,24 +212,6 @@ async function createArchiveServer(directory) {
         const relative = url.searchParams.get("path");
         const absolute = await checkedPath(root, relative);
         const entries = [{ path: relative }];
-        if (
-          relative.startsWith("组会/") &&
-          path.basename(relative) === "cover.webp"
-        ) {
-          // Validate companion attachments locally, without scanning the archive.
-          for (const name of await fsp.readdir(path.dirname(absolute))) {
-            if (!/\.(pdf|pptx?)$/i.test(name)) continue;
-            const companion =
-              relative.slice(0, relative.lastIndexOf("/") + 1) + name;
-            try {
-              const checked = await checkedPath(root, companion);
-              if ((await fsp.lstat(checked)).isFile()) {
-                entries.push({ path: companion });
-                break;
-              }
-            } catch {}
-          }
-        }
         const catalog = buildCatalog(entries);
         if (
           !catalog.meetings.length &&

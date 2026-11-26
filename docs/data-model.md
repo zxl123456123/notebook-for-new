@@ -26,7 +26,7 @@ slug 在所属 collection 唯一、规范化为小写路径段，改名保留重
 | guides | title、slug、summary、bodyMarkdown、category→guide-categories、tags→guide-tags[]、relatedGuides→guides[]、resourceLinks[{label,url}]、owner→users、visibility、publishedRevision、anchors[{key,heading}] | 相关推荐仅返回当前用户有权读取的指南；资源链接限 http/https，外链标识明确；Markdown 唯一正文；owner 负责维护而非额外授权；publishedRevision 为发布快照哈希/标识，发布时生成 |
 | meetings（guides） | title、slug、meetingDate、presentations[{id,presenter,paperTitle,notes?,attachments→media[]}]、visibility | 每周一次记录可有多位汇报人、多篇论文；每项汇报可含论文 PDF 与 PPT/PPTX，附件父记录均为该 meeting |
 | resource-categories（guides） | title、slug、parent→resource-categories? | 分类可有子类；禁止自引用与循环 |
-| resources（guides） | title、slug、category→resource-categories、attachments→media[]、visibility | 按分类归档 PDF 等资料；正文摘要可后续补充，不要求手工改页面 |
+| resources（guides） | title、slug、category→resource-categories、attachments→media[]、externalUrl?、visibility | 按主题分类混放写作经验、模板、算法教学、讲座与链接等资料；正文摘要可后续补充，不要求手工改页面 |
 | albums（portal） | title、slug、eventDate、photos→media[]、visibility | 按活动归档，允许同一活动持续补照片；照片支持 JPG/JPEG/PNG/WebP |
 | photo-consents（portal） | photo→media、subjectRef、grantedAt、withdrawnAt?、policyVersion、evidenceRef、actor→users | 公开照片前确认可识别被摄者的明确授权；证据私有，未确认不公开；撤回立即阻断该照片公开读取 |
 | media | filename、mimeType、filesize、storageKey、uploadedBy→users、parent(polymorphic relationship)?、alt | parent 只允许 news/research/members/guides/meetings/resources/albums/alumni-profiles；一个文件一个父记录；未挂载仅上传者/admin 可读；metadata 同样受控 |
@@ -225,7 +225,7 @@ media 的父关系是“至多选其中一条”，并非允许同时属于多�
 | 对象 | 关系与基数 | 当前输入边界 |
 |---|---|---|
 | 组会 meetings | 一次组会含多项 presentations；每项汇报含多个附件，附件仍归属该组会 | 目录中的“汇报人”先保存原文，不凭同名绑定 members；汇报项暂不独立建 collection |
-| 资料 resources | 每条资料属于一个末级分类；分类可有多个子类与多条资料；每条资料可含多个附件 | 当前适配器每个 PDF 生成一条资料，不能把同目录文件自动认定为同一资料的多个附件 |
+| 资料 resources | 每条资料属于一个末级分类；分类可有多个子类与多条资料；每条资料可含多个附件 | 当前适配器将每个支持的文档或网站快捷方式识别为独立条目；同目录只表示同一主题 |
 | 相册 albums | 一个活动相册含多张照片；本模型中每个 media 至多归属一个父记录 | 同活动追加照片；当前未实现一张 media 跨相册共享 |
 | 文件 media | 文件类型描述格式；附件角色描述它在记录中的用途 | 当前适配器按 PDF → papers、PPT/PPTX → slides 暂分组；PDF 也可能是幻灯片，正式导入需允许确认角色，不能把扩展名当作论文身份 |
 
@@ -238,12 +238,15 @@ media 的父关系是“至多选其中一条”，并非允许同时属于多�
 用户只需提供以下目录中的材料，无需先填写 CMS 表单或修改 HTML；日期用实际活动日期，文件名可保留原名：
 
 ```text
-组会/YYYY-MM-DD 主题/汇报人 - 论文简称/任意.pdf 或 任意.ppt 或 任意.pptx
-资料/<分类>(/<子类>...)/名称.pdf
+组会/YYYY-MM-DD( 主题可选)/任意.pdf 或 任意.ppt 或 任意.pptx
+组会/YYYY-MM-DD 主题/汇报人 - 论文简称/任意.pdf 或 任意.ppt 或 任意.pptx（兼容旧目录）
+资料/<主题分类>(/<子类>...)/名称.pdf 或 .ppt/.pptx/.doc/.docx/.dotx/.md/.tex/.bib/.zip/.url
 相册/YYYY-MM-DD 活动名/*.jpg/jpeg/png/webp
 ```
 
-组会汇报目录可选放置 `cover.webp` 作为展示封面；适配结果的 `talk.cover` 是可选文件条目，不计入 `papers` 或 `slides`。封面不能独立形成汇报：目录中须同时存在 PDF、PPT 或 PPTX，否则进入 issues。未提供封面时保持原有结果结构；其他图片名称不作为组会封面。该约定仅用于本地目录适配，不新增 CMS 字段或更改附件权限。
+组会按日期文件夹直接收录 PDF 与 PPT/PPTX，无需提图、封面或论文分析；旧汇报人子目录继续兼容。已有 `cover.webp` 静默忽略，不读取、不删除、不生成业务字段。直接附在日期目录下的文件形成一项“本场文件”，不猜测汇报人。
+
+资料按主题混放原始文件与外部链接。链接采用通用 `.url` 互联网快捷方式：UTF-8 或带 BOM 的 UTF-16 小文本（上限 16 KiB），`[InternetShortcut]` 段中包含唯一 `URL=https://...` 或 `URL=http://...`。只读取地址，不请求目标、图标或网页内容，不把快捷方式当附件下载。适配器的 `prepareCatalog(entries, readText?)` 异步准备文本；浏览器只读取快捷方式的内容，目录扫描提供可信读取回调，复用同一解析。资源输出 `{id,title,category,asset}` 或 `{id,title,category,href}`；PDF 与相册图片 inline，Office、Markdown、LaTeX/BibTeX 与 ZIP 下载。其他文件格式（包括算法脚本）不在本次支持范围。
 
 组会按日期与主题合并记录，汇报子目录形成多项汇报；本地适配结果的 `talks` 对应后续模型的 `presentations`。资料目录形成分类层级；相册按活动归档并增量追加。适配器输出 `meetings / resources / albums / issues`；不符合命名或类型要求的材料进入 issues，列明路径与原因，不静默遗漏或凭空补作者、日期、授权。
 
